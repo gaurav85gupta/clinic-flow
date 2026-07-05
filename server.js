@@ -1348,15 +1348,14 @@ if (process.env.NODE_ENV === 'development') app.use(morgan('dev'));
 
 /* ============================================================
    3B. STATIC FRONTEND
-   The frontend (index.html, dashboard.html, css/, js/) lives one
-   directory above this file: clinic-management/ — server.js sits
-   in clinic-management/server/. FRONTEND_ROOT can be overridden
-   via env var if the folder layout ever changes.
+   The frontend (index.html, dashboard.html, css/, js/) lives in
+   the same directory as this file (project root). FRONTEND_ROOT
+   can be overridden via env var if the folder layout ever changes.
    ============================================================ */
 
 const FRONTEND_ROOT = process.env.FRONTEND_ROOT
   ? path.resolve(process.env.FRONTEND_ROOT)
-  : path.join(__dirname, '..');
+  : __dirname;
 
 app.use(express.static(FRONTEND_ROOT));
 

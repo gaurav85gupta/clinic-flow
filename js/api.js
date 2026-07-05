@@ -7,7 +7,14 @@
             Replace API_BASE with real server URL when ready.
    ============================================================ */
 
-const API_BASE = 'http://localhost:5000/api';
+/**
+ * Same-origin relative path — works automatically whether this page
+ * is opened from the local Electron server (http://localhost:PORT)
+ * or from the live Render URL, since the browser resolves '/api'
+ * against whatever host actually served this page. No hardcoded
+ * host needed, and nothing to change when the deploy URL changes.
+ */
+const API_BASE = '/api';
 
 /**
  * Phase 9.0 — reads the JWT issued at login and attaches it as a

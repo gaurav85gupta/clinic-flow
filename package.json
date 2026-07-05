@@ -10,14 +10,13 @@
   "private": true,
   "main": "electron/main.js",
   "scripts": {
-    "start":          "node server/server.js",
+    "start":          "node server.js",
     "electron":       "electron .",
     "electron:dev":   "cross-env NODE_ENV=development electron .",
     "build":          "electron-builder --win --x64",
     "build:dir":      "electron-builder --win --x64 --dir",
     "build:portable": "electron-builder --win portable --x64",
-    "build:all":      "electron-builder --win --x64 --ia32",
-    "postinstall":    "electron-builder install-app-deps"
+    "build:all":      "electron-builder --win --x64 --ia32"
   },
   "dependencies": {
     "bcryptjs":               "^2.4.3",

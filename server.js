@@ -23,7 +23,7 @@ const mongoSanitize = require('express-mongo-sanitize');
 // Phase 14.3 — Dashboard Visibility Integration. First real route-level
 // consumer of the Visibility Engine (visibilityEngine.js, Phase 14.1/14.2).
 // Only consumed here — nothing in this file modifies the engine itself.
-const visibilityEngine = require('../js/visibilityEngine');
+const visibilityEngine = require('./js/visibilityEngine');
 
 /* ============================================================
    1. ENVIRONMENT VALIDATION — fail fast on missing vars
@@ -1365,7 +1365,7 @@ app.use(express.static(FRONTEND_ROOT));
    ============================================================ */
 
 // Health check — modular route (controllers/health.controller.js, routes/health.routes.js)
-app.use('/api/health', require('../routes/health.routes'));
+app.use('/api/health', require('./routes/health.routes'));
 
 /* ============================================================
    4B. AUTHENTICATION & RBAC (Phase 4.0)
@@ -8496,10 +8496,10 @@ app.use('/api/staff', staffRouter);
    ============================================================ */
 
 // 404 — only for requests that didn't match a static file or API route
-app.use(require('../middleware/notFound'));
+app.use(require('./middleware/notFound'));
 
 // Global error handler
-app.use(require('../middleware/errorHandler'));
+app.use(require('./middleware/errorHandler'));
 
 /* ============================================================
    6. START — DB first, then server

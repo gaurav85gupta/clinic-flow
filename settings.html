@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MediCore — Settings</title>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/settings.css">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <style>
+    /* Phase 13.0 — Permission matrix grid. Scoped here (not css/settings.css,
+       which isn't available to edit) same pattern as the inline styles
+       already used in appointments.html / billing.html for page-specific UI. */
+    .perm-matrix-wrap { overflow-x: auto; }
+    .perm-role-tabs {
+      display: flex; gap: 4px; margin-bottom: 12px; flex-wrap: wrap;
+      border-bottom: 1px solid rgba(0,0,0,0.08); padding-bottom: 0;
+    }
+    .perm-role-tab {
+      padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer;
+      border-bottom: 2px solid transparent; color: var(--color-on-surface-variant, #707974);
+      user-select: none;
+    }
+    .perm-role-tab.active {
+      color: var(--color-secondary-light, #2EBD85);
+      border-bottom-color: var(--color-secondary-light, #2EBD85);
+    }
+    .perm-matrix-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 640px; }
+    .perm-matrix-table th, .perm-matrix-table td {
+      padding: 9px 10px; text-align: center; border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+    .perm-matrix-table th { font-weight: 600; color: var(--color-on-surface-variant, #707974); font-size: 12px; }
+    .perm-matrix-table td:first-child, .perm-matrix-table th:first-child {
+      text-align: left; font-weight: 600; white-space: nowrap; padding-left: 4px;
+    }
+    .perm-matrix-table input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
+    .perm-matrix-table input[type="checkbox"]:disabled { cursor: not-allowed; opacity: 0.4; }
+    .perm-matrix-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+    .perm-locked-note {
+      font-size: 12px; color: var(--color-on-surface-variant, #707974);
+      margin-top: 8px; display: flex; align-items: center; gap: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <main class="main-content">
+
+      <div class="page-header">
+        <div class="page-header-left">
+          <h1>Settings</h1>
+          <p>Configure your clinic management system</p>
+        </div>
+        <div class="page-header-actions">
+          <button class="btn btn-secondary">Discard Changes</button>
+          <button class="btn btn-primary" id="saveSettingsBtn"><span class="material-symbols-outlined">save</span> Save Changes</button>
+        </div>
+      </div>
+
+      <div class="settings-layout">
+        <!-- Settings Sidebar Nav -->
+        <div class="settings-nav card">
+          <div class="settings-nav-item active" data-tab="clinic">
+            <span class="material-symbols-outlined">local_hospital</span>
+            <span>Clinic Information</span>
+          </div>
+          <div class="settings-nav-item" data-tab="staff">
+            <span class="material-symbols-outlined">group</span>
+            <span>Staff Management</span>
+          </div>
+          <div class="settings-nav-item" data-tab="departments">
+            <span class="material-symbols-outlined">apartment</span>
+            <span>Departments</span>
+          </div>
+          <div class="settings-nav-item" data-tab="branding">
+            <span class="material-symbols-outlined">palette</span>
+            <span>Branding</span>
+          </div>
+          <div class="settings-nav-item" data-tab="notifications">
+            <span class="material-symbols-outlined">notifications</span>
+            <span>Notifications</span>
+          </div>
+          <div class="settings-nav-item" data-tab="billing_settings">
+            <span class="material-symbols-outlined">payments</span>
+            <span>Billing Settings</span>
+          </div>
+          <div class="settings-nav-item" data-tab="security">
+            <span class="material-symbols-outlined">security</span>
+            <span>Security</span>
+          </div>
+          <div class="settings-nav-item" data-tab="integrations">
+            <span class="material-symbols-outlined">hub</span>
+            <span>Integrations</span>
+          </div>
+        </div>
+
+        <!-- Settings Content -->
+        <div class="settings-content">
+
+          <!-- Clinic Information -->
+          <div class="settings-tab active" id="tab-clinic">
+            <div class="card card-padded">
+              <div class="settings-section-header">
+                <div class="settings-section-icon"><span class="material-symbols-outlined icon-filled">local_hospital</span></div>
+                <div>
+                  <div class="settings-section-title">Clinic Information</div>
+                  <div class="settings-section-desc">Basic details about your clinic</div>
+                </div>
+              </div>
+              <div class="divider"></div>
+              <div class="form-row">
+                <div class="form-group"><label class="form-label">Clinic Name</label><input class="form-input" id="clinicName"></div>
+                <!-- Registration Number: no field exists on the Clinic schema (server.js).
+                     Left as a free-text input with no backend write target. -->
+                <div class="form-group"><label class="form-label">Registration Number</label><input class="form-input" placeholder="Not stored by backend yet"></div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label class="form-label">Phone Number</label><input class="form-input" id="clinicPhone"></div>
+                <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" id="clinicEmail" placeholder="admin@example.com"></div>
+              </div>
+              <div class="form-group"><label class="form-label">Address</label><textarea class="form-textarea" rows="2" id="clinicStreet"></textarea></div>
+              <div class="form-row">
+                <div class="form-group"><label class="form-label">City</label><input class="form-input" id="clinicCity"></div>
+                <div class="form-group"><label class="form-label">PIN Code</label><input class="form-input" id="clinicPincode"></div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label class="form-label">Opening Time</label><input class="form-input" type="time" id="workingHoursStart"></div>
+                <div class="form-group"><label class="form-label">Closing Time</label><input class="form-input" type="time" id="workingHoursEnd"></div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label class="form-label">Appointment Duration (minutes)</label><input class="form-input" type="number" id="appointmentDuration" min="5" max="480" step="5" placeholder="30"></div>
+                <div class="form-group"></div>
+              </div>
+              <!-- Working Days / Specializations Offered: no fields exist on
+                   Clinic or Setting schemas for these. Left as static UI —
+                   not wired, not faked with saved values. -->
+              <div class="form-group">
+                <label class="form-label">Working Days</label>
+                <div class="day-toggle-group">
+                  <label class="day-toggle"><input type="checkbox" checked><span>Mon</span></label>
+                  <label class="day-toggle"><input type="checkbox" checked><span>Tue</span></label>
+                  <label class="day-toggle"><input type="checkbox" checked><span>Wed</span></label>
+                  <label class="day-toggle"><input type="checkbox" checked><span>Thu</span></label>
+                  <label class="day-toggle"><input type="checkbox" checked><span>Fri</span></label>
+                  <label class="day-toggle"><input type="checkbox" checked><span>Sat</span></label>
+                  <label class="day-toggle"><input type="checkbox"><span>Sun</span></label>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Specializations Offered</label>
+                <div class="tags-input">
+                  <input type="text" placeholder="Add specialization..." class="tag-input">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Staff Management -->
+          <div class="settings-tab" id="tab-staff">
+            <div class="card card-padded">
+              <div class="settings-section-header">
+                <div class="settings-section-icon"><span class="material-symbols-outlined icon-filled">group</span></div>
+                <div>
+                  <div class="settings-section-title">Staff Management</div>
+                  <div class="settings-section-desc">Manage roles and permissions</div>
+                </div>
+                <button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="openModal('addStaffModal')"><span class="material-symbols-outlined">add</span> Add Staff</button>
+              </div>
+              <div class="divider"></div>
+              <!-- Populated by js/settings.js loadStaff() from GET /api/staff
+                   (clinic_admin only; role: doctor or receptionist). -->
+              <div class="staff-list" id="staffList">
+                <div class="text-muted text-sm" style="padding:8px 0">Loading staff…</div>
+              </div>
+            </div>
+            <!-- Phase 13.0 — Role Permissions matrix. Fully database-driven:
+                 loaded from GET /api/permissions, edited via checkboxes,
+                 saved via PUT /api/permissions, restored via
+                 POST /api/permissions/reset. js/settings.js owns all of
+                 loadPermissions() / renderPermissionMatrix() /
+                 savePermissionMatrix() / resetPermissionMatrix(). Editing
+                 is disabled entirely for any role other than clinic_admin
+                 (server also enforces this via authorize('clinic_admin')). -->
+            <div class="card card-padded" style="margin-top:16px">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Role Permissions</div>
+                  <div class="card-subtitle">Per-module, per-action access for each role. Changes apply immediately on save.</div>
+                </div>
+              </div>
+              <div class="divider"></div>
+
+              <div class="perm-role-tabs" id="permRoleTabs">
+                <!-- populated by JS: one tab per PERMISSION_ROLES entry -->
+              </div>
+
+              <div class="perm-matrix-wrap">
+                <table class="perm-matrix-table">
+                  <thead>
+                    <tr>
+                      <th>Module</th>
+                      <th>View</th>
+                      <th>Create</th>
+                      <th>Edit</th>
+                      <th>Delete</th>
+                      <th>Export</th>
+                      <th>Manage</th>
+                    </tr>
+                  </thead>
+                  <tbody id="permMatrixBody">
+                    <tr><td colspan="7" class="text-muted text-sm" style="text-align:left;padding:12px 4px">Loading permissions…</td></tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div id="permLockedNote" class="perm-locked-note" style="display:none">
+                <span class="material-symbols-outlined" style="font-size:16px">lock</span>
+                Only clinic admins can change role permissions.
+              </div>
+
+              <div class="perm-matrix-actions">
+                <button class="btn btn-secondary btn-sm" id="permResetBtn"><span class="material-symbols-outlined">restart_alt</span> Reset to Defaults</button>
+                <button class="btn btn-primary btn-sm" id="permSaveBtn"><span class="material-symbols-outlined">save</span> Save Permissions</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Departments (Phase 12.5) -->
+          <div class="settings-tab" id="tab-departments">
+            <div class="card card-padded">
+              <div class="settings-section-header">
+                <div class="settings-section-icon"><span class="material-symbols-outlined icon-filled">apartment</span></div>
+                <div>
+                  <div class="settings-section-title">Departments</div>
+                  <div class="settings-section-desc">Manage the departments used across doctors, appointments, reports and billing</div>
+                </div>
+                <button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="openModal('addDepartmentModal')"><span class="material-symbols-outlined">add</span> Add Department</button>
+              </div>
+              <div class="divider"></div>
+              <div class="toolbar" style="margin-bottom:12px">
+                <div class="search-box">
+                  <span class="material-symbols-outlined">search</span>
+                  <input type="text" placeholder="Search departments..." id="deptSearch">
+                </div>
+                <select class="filter-select" id="deptStatusFilter">
+                  <option value="">All Status</option>
+                  <option value="true">Active</option>
+                  <option value="false">Inactive</option>
+                </select>
+              </div>
+              <!-- Populated by js/settings.js loadDepartments() from
+                   GET /api/departments. Drag handles reorder via
+                   PATCH /api/departments/reorder. MongoDB only — if
+                   the clinic has none, shows "No departments found". -->
+              <div class="staff-list" id="departmentList">
+                <div class="text-muted text-sm" style="padding:8px 0">Loading departments…</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Branding -->
+          <div class="settings-tab" id="tab-branding">
+            <div class="card card-padded">
+              <div class="settings-section-header">
+                <div class="settings-section-icon"><span class="material-symbols-outlined icon-filled">palette</span></div>
+                <div>
+                  <div class="settings-section-title">Branding & Theme</div>
+                  <div class="settings-section-desc">Customize your clinic's look</div>
+                </div>
+              </div>
+              <div class="divider"></div>
+              <div class="form-group">
+                <label class="form-label">Clinic Logo</label>
+                <div class="logo-upload">
+                  <div class="logo-preview">
+                    <span class="material-symbols-outlined icon-filled" style="font-size:32px;color:var(--color-secondary-light)">medical_services</span>
+                  </div>
+                  <div>
+                    <button class="btn btn-secondary btn-sm"><span class="material-symbols-outlined">upload</span> Upload Logo</button>
+                    <div class="text-muted text-xs" style="margin-top:6px">PNG, JPG up to 2MB. Recommended: 200×200px</div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Primary Color</label>
+                <div class="color-swatches">
+                  <label class="color-swatch active" style="background:#1B4D3E"><input type="radio" name="primary_color" checked></label>
+                  <label class="color-swatch" style="background:#0061a4"><input type="radio" name="primary_color"></label>
+                  <label class="color-swatch" style="background:#7b2d8b"><input type="radio" name="primary_color"></label>
+                  <label class="color-swatch" style="background:#b83c00"><input type="radio" name="primary_color"></label>
+                  <label class="color-swatch" style="background:#5c5200"><input type="radio" name="primary_color"></label>
+                  <input type="color" value="#1B4D3E" class="color-picker-input" title="Custom color">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">App Name</label>
+                <input class="form-input" value="MediCore">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Clinic Tagline</label>
+                <input class="form-input" id="clinicTagline" placeholder="e.g. Caring for you, always">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Invoice Footer Note</label>
+                <textarea class="form-textarea">Thank you for choosing MediCore Clinic. For queries, call +91 22 4567 8900.</textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Notifications -->
+          <div class="settings-tab" id="tab-notifications">
+            <div class="card card-padded">
+              <div class="settings-section-header">
+                <div class="settings-section-icon"><span class="material-symbols-outlined icon-filled">notifications</span></div>
+                <div>
+                  <div class="settings-section-title">Notification Settings</div>
+                  <div class="settings-section-desc">Configure alerts and reminders</div>
+                </div>
+              </div>
+              <div class="divider"></div>
+              <div class="notif-list">
+                <div class="notif-item"><div class="notif-info"><div class="notif-title">Appointment Reminders (SMS)</div><div class="notif-desc">Send SMS reminders to patients 24hrs before appointment</div></div><label class="toggle"><input type="checkbox" id="notifSms"><span class="toggle-slider"></span></label></div>
+                <div class="notif-item"><div class="notif-info"><div class="notif-title">Appointment Reminders (Email)</div><div class="notif-desc">Send email reminders to patients 48hrs before appointment</div></div><label class="toggle"><input type="checkbox" id="notifEmail"><span class="toggle-slider"></span></label></div>
+                <div class="notif-item"><div class="notif-info"><div class="notif-title">WhatsApp Notifications</div><div class="notif-desc">Send appointment confirmations and reminders via WhatsApp</div></div><label class="toggle"><input type="checkbox" id="notifWhatsapp"><span class="toggle-slider"></span></label></div>
+                <div class="notif-item"><div class="notif-info"><div class="notif-title">New Patient Registration</div><div class="notif-desc">Notify admin when a new patient is registered</div></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+                <div class="notif-item"><div class="notif-info"><div class="notif-title">Invoice Payment Received</div><div class="notif-desc">Alert when an invoice payment is received</div></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+                <div class="notif-item"><div class="notif-info"><div class="notif-title">Overdue Invoice Alert</div><div class="notif-desc">Notify billing staff of overdue invoices daily</div></div><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></div>
+                <div class="notif-item"><div class="notif-info"><div class="notif-title">Daily Summary Report</div><div class="notif-desc">Email daily clinic summary to administrator</div></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+                <div class="notif-item"><div class="notif-info"><div class="notif-title">Doctor Schedule Changes</div><div class="notif-desc">Notify when a doctor's schedule is modified</div></div><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Billing Settings -->
+          <div class="settings-tab" id="tab-billing_settings">
+            <div class="card card-padded">
+              <div class="settings-section-header">
+                <div class="settings-section-icon"><span class="material-symbols-outlined icon-filled">payments</span></div>
+                <div>
+                  <div class="settings-section-title">Billing Configuration</div>
+                  <div class="settings-section-desc">Invoice and payment settings</div>
+                </div>
+              </div>
+              <div class="divider"></div>
+              <div class="form-row">
+                <div class="form-group"><label class="form-label">Currency</label>
+                  <select class="form-select" id="settingsCurrency"><option value="USD">USD ($)</option><option value="INR">INR (₹)</option><option value="EUR">EUR (€)</option></select>
+                </div>
+                <div class="form-group"><label class="form-label">Tax Rate (%)</label><input class="form-input" type="number" id="settingsTaxPercentage"></div>
+              </div>
+              <!-- Invoice Prefix, Invoice Due Days, Payment Methods Accepted,
+                   GST/Tax Number: no fields exist on the Setting schema for
+                   these. Left as static UI — not wired, not faked. -->
+              <div class="form-row">
+                <div class="form-group"><label class="form-label">Invoice Prefix</label><input class="form-input" value="INV-"></div>
+                <div class="form-group"><label class="form-label">Invoice Due Days</label><input class="form-input" type="number" value="7"></div>
+              </div>
+              <div class="form-group"><label class="form-label">Payment Methods Accepted</label>
+                <div class="checkbox-group">
+                  <label class="checkbox-item"><input type="checkbox" checked><span>Credit/Debit Card</span></label>
+                  <label class="checkbox-item"><input type="checkbox" checked><span>Cash</span></label>
+                  <label class="checkbox-item"><input type="checkbox" checked><span>Bank Transfer / NEFT</span></label>
+                  <label class="checkbox-item"><input type="checkbox" checked><span>UPI</span></label>
+                  <label class="checkbox-item"><input type="checkbox"><span>Insurance</span></label>
+                </div>
+              </div>
+              <div class="form-group"><label class="form-label">GST / Tax Number</label><input class="form-input" placeholder="Not stored by backend yet"></div>
+            </div>
+          </div>
+
+          <!-- Security -->
+          <div class="settings-tab" id="tab-security">
+            <div class="card card-padded">
+              <div class="settings-section-header">
+                <div class="settings-section-icon"><span class="material-symbols-outlined icon-filled">security</span></div>
+                <div>
+                  <div class="settings-section-title">Security Settings</div>
+                  <div class="settings-section-desc">Access control and authentication</div>
+                </div>
+              </div>
+              <div class="divider"></div>
+              <div class="notif-list">
+                <div class="notif-item"><div class="notif-info"><div class="notif-title">Two-Factor Authentication</div><div class="notif-desc">Require 2FA for all admin accounts</div></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+                <div class="notif-item"><div class="notif-info"><div class="notif-title">Session Timeout</div><div class="notif-desc">Auto-logout after 30 minutes of inactivity</div></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+                <div class="notif-item"><div class="notif-info"><div class="notif-title">Login Attempt Alerts</div><div class="notif-desc">Alert admin on 5+ failed login attempts</div></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+                <div class="notif-item"><div class="notif-info"><div class="notif-title">Data Encryption</div><div class="notif-desc">Encrypt all patient data at rest and in transit</div></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+                <div class="notif-item"><div class="notif-info"><div class="notif-title">Audit Logs</div><div class="notif-desc">Log all user actions for compliance review</div></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+              </div>
+              <div class="divider"></div>
+              <div class="form-group"><label class="form-label">Minimum Password Length</label><input class="form-input" type="number" value="8"></div>
+              <div class="form-group"><label class="form-label">Password Expiry (days)</label><input class="form-input" type="number" value="90"></div>
+              <div style="margin-top:8px">
+                <button class="btn btn-secondary"><span class="material-symbols-outlined">download</span> Download Audit Log</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Integrations -->
+          <div class="settings-tab" id="tab-integrations">
+            <div class="card card-padded">
+              <div class="settings-section-header">
+                <div class="settings-section-icon"><span class="material-symbols-outlined icon-filled">hub</span></div>
+                <div>
+                  <div class="settings-section-title">Integrations</div>
+                  <div class="settings-section-desc">Connect third-party services</div>
+                </div>
+              </div>
+              <div class="divider"></div>
+              <div class="integrations-grid">
+                <div class="integration-card connected">
+                  <div class="int-icon" style="background:#e8f0fe"><span class="material-symbols-outlined" style="color:#4285F4;font-size:28px">mail</span></div>
+                  <div class="int-info">
+                    <div class="int-name">Gmail / Google Workspace</div>
+                    <div class="int-desc">Send email notifications via Google</div>
+                  </div>
+                  <span class="badge-status badge-active">Connected</span>
+                  <button class="btn btn-secondary btn-sm">Disconnect</button>
+                </div>
+                <div class="integration-card connected">
+                  <div class="int-icon" style="background:#e8f5e9"><span class="material-symbols-outlined icon-filled" style="color:#1A73E8;font-size:28px">sms</span></div>
+                  <div class="int-info">
+                    <div class="int-name">Twilio SMS</div>
+                    <div class="int-desc">SMS alerts and appointment reminders</div>
+                  </div>
+                  <span class="badge-status badge-active">Connected</span>
+                  <button class="btn btn-secondary btn-sm">Configure</button>
+                </div>
+                <div class="integration-card">
+                  <div class="int-icon" style="background:#fff3e0"><span class="material-symbols-outlined icon-filled" style="color:#f57c00;font-size:28px">account_balance</span></div>
+                  <div class="int-info">
+                    <div class="int-name">Razorpay Payments</div>
+                    <div class="int-desc">Online payment gateway for invoices</div>
+                  </div>
+                  <span class="badge-status badge-inactive">Not Connected</span>
+                  <button class="btn btn-primary btn-sm">Connect</button>
+                </div>
+                <div class="integration-card">
+                  <div class="int-icon" style="background:#fce4ec"><span class="material-symbols-outlined icon-filled" style="color:#e91e63;font-size:28px">cloud_upload</span></div>
+                  <div class="int-info">
+                    <div class="int-name">AWS S3 Storage</div>
+                    <div class="int-desc">Cloud storage for medical documents</div>
+                  </div>
+                  <span class="badge-status badge-inactive">Not Connected</span>
+                  <button class="btn btn-primary btn-sm">Connect</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Add Staff Modal -->
+  <div class="modal-overlay" id="addStaffModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Add Staff Member</div>
+        <button class="modal-close" onclick="closeModal('addStaffModal')"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group" id="newStaffFullNameGroup"><label class="form-label">Full Name</label><input class="form-input" placeholder="Full name" id="newStaffFullName"></div>
+          <div class="form-group"><label class="form-label">Role</label>
+            <select class="form-select" id="newStaffRole" onchange="onStaffRoleChange('new')">
+              <option value="doctor">Doctor</option>
+              <option value="receptionist">Receptionist</option>
+            </select>
+          </div>
+        </div>
+        <!-- Phase 12.1 (Staff Identity Linking) — shown only when Role = Doctor.
+             Loaded from GET /api/staff/available-doctors (unlinked, active
+             doctors only). Selecting a doctor auto-fills Full Name (read-only)
+             from the Doctor profile — never typed manually for doctor logins. -->
+        <div class="form-group" id="newStaffDoctorGroup" style="display:none">
+          <label class="form-label">Select Doctor</label>
+          <select class="form-select" id="newStaffDoctorId" onchange="onStaffDoctorSelect('new')">
+            <option value="">Loading doctors…</option>
+          </select>
+          <div class="text-muted text-sm" id="newStaffDoctorHint" style="margin-top:4px"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Username</label><input class="form-input" placeholder="e.g. jsmith" id="newStaffUsername" autocomplete="off"></div>
+          <div class="form-group"><label class="form-label">Phone</label><input class="form-input" placeholder="+91 98765 43210" id="newStaffPhone"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Password</label><input class="form-input" type="password" placeholder="Min. 8 characters" id="newStaffPassword" autocomplete="new-password"></div>
+        <div id="newStaffError" class="text-sm" style="color:var(--color-error);display:none;margin-top:4px"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('addStaffModal')">Cancel</button>
+        <button class="btn btn-primary" id="newStaffSubmitBtn" onclick="submitNewStaff()"><span class="material-symbols-outlined">check</span> Add Staff</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Staff Modal -->
+  <div class="modal-overlay" id="editStaffModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Edit Staff Member</div>
+        <button class="modal-close" onclick="closeModal('editStaffModal')"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editStaffId">
+        <input type="hidden" id="editStaffCurrentDoctorId">
+        <div class="form-row">
+          <div class="form-group" id="editStaffFullNameGroup"><label class="form-label">Full Name</label><input class="form-input" id="editStaffFullName"></div>
+          <div class="form-group"><label class="form-label">Role</label>
+            <select class="form-select" id="editStaffRole" disabled>
+              <option value="doctor">Doctor</option>
+              <option value="receptionist">Receptionist</option>
+            </select>
+          </div>
+        </div>
+        <!-- Phase 12.1 — same "Select Doctor" pattern as Add Staff. Role is
+             locked on edit (see editStaffRole disabled above): changing a
+             login from doctor<->receptionist isn't a "relink", it's a
+             different identity — out of scope here, matches the spec's
+             "Edit Staff" section (editing must not break the doctor link
+             unless the admin intentionally relinks to a different doctor). -->
+        <div class="form-group" id="editStaffDoctorGroup" style="display:none">
+          <label class="form-label">Linked Doctor</label>
+          <select class="form-select" id="editStaffDoctorId">
+            <option value="">Loading doctors…</option>
+          </select>
+          <div class="text-muted text-sm" style="margin-top:4px">Change this only to relink the login to a different doctor profile.</div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Username</label><input class="form-input" id="editStaffUsername" autocomplete="off"></div>
+          <div class="form-group"><label class="form-label">Phone</label><input class="form-input" id="editStaffPhone"></div>
+        </div>
+        <div id="editStaffError" class="text-sm" style="color:var(--color-error);display:none;margin-top:4px"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('editStaffModal')">Cancel</button>
+        <button class="btn btn-primary" id="editStaffSubmitBtn" onclick="submitEditStaff()"><span class="material-symbols-outlined">check</span> Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reset Password Modal -->
+  <div class="modal-overlay" id="resetStaffPasswordModal">
+    <div class="modal" style="max-width:440px">
+      <div class="modal-header">
+        <div class="modal-title">Reset Password</div>
+        <button class="modal-close" onclick="closeModal('resetStaffPasswordModal')"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="resetStaffId">
+        <p class="text-muted text-sm" id="resetStaffName" style="margin-bottom:12px"></p>
+        <div class="form-group"><label class="form-label">New Password</label><input class="form-input" type="password" placeholder="Min. 8 characters" id="resetStaffNewPassword" autocomplete="new-password"></div>
+        <div id="resetStaffError" class="text-sm" style="color:var(--color-error);display:none;margin-top:4px"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('resetStaffPasswordModal')">Cancel</button>
+        <button class="btn btn-primary" id="resetStaffSubmitBtn" onclick="submitResetStaffPassword()"><span class="material-symbols-outlined">check</span> Reset Password</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reset Permissions Confirmation Modal (Phase 13.0) -->
+  <div class="modal-overlay" id="resetPermissionsModal">
+    <div class="modal" style="max-width:440px">
+      <div class="modal-header">
+        <div class="modal-title">Reset Permissions?</div>
+        <button class="modal-close" onclick="closeModal('resetPermissionsModal')"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted text-sm">This restores the default permission matrix for all 4 roles in this clinic. Any custom changes will be lost.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('resetPermissionsModal')">Cancel</button>
+        <button class="btn btn-primary" id="permResetConfirmBtn" onclick="submitResetPermissions()"><span class="material-symbols-outlined">restart_alt</span> Reset Permissions</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Department Modal -->
+  <div class="modal-overlay" id="addDepartmentModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Add Department</div>
+        <button class="modal-close" onclick="closeModal('addDepartmentModal')"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group"><label class="form-label">Department Name</label><input class="form-input" placeholder="e.g. Cardiology" id="newDeptName"></div>
+        <div class="form-group"><label class="form-label">Description</label><textarea class="form-textarea" placeholder="Optional short description..." id="newDeptDescription"></textarea></div>
+        <div class="form-group"><label class="form-label">Color (optional)</label>
+          <div class="color-swatches">
+            <label class="color-swatch active" style="background:#1B4D3E"><input type="radio" name="newDeptColor" value="#1B4D3E" checked></label>
+            <label class="color-swatch" style="background:#0061a4"><input type="radio" name="newDeptColor" value="#0061a4"></label>
+            <label class="color-swatch" style="background:#7b2d8b"><input type="radio" name="newDeptColor" value="#7b2d8b"></label>
+            <label class="color-swatch" style="background:#b83c00"><input type="radio" name="newDeptColor" value="#b83c00"></label>
+            <label class="color-swatch" style="background:#2EBD85"><input type="radio" name="newDeptColor" value="#2EBD85"></label>
+            <input type="color" value="#1B4D3E" class="color-picker-input" id="newDeptColorCustom" title="Custom color">
+          </div>
+        </div>
+        <div id="newDeptError" class="text-sm" style="color:var(--color-error);display:none;margin-top:4px"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('addDepartmentModal')">Cancel</button>
+        <button class="btn btn-primary" id="newDeptSubmitBtn" onclick="submitNewDepartment()"><span class="material-symbols-outlined">check</span> Add Department</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Department Modal -->
+  <div class="modal-overlay" id="editDepartmentModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Edit Department</div>
+        <button class="modal-close" onclick="closeModal('editDepartmentModal')"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editDeptId">
+        <div class="form-group"><label class="form-label">Department Name</label><input class="form-input" id="editDeptName"></div>
+        <div class="form-group"><label class="form-label">Description</label><textarea class="form-textarea" id="editDeptDescription"></textarea></div>
+        <div class="form-group"><label class="form-label">Color (optional)</label>
+          <div class="color-swatches">
+            <label class="color-swatch" style="background:#1B4D3E"><input type="radio" name="editDeptColor" value="#1B4D3E"></label>
+            <label class="color-swatch" style="background:#0061a4"><input type="radio" name="editDeptColor" value="#0061a4"></label>
+            <label class="color-swatch" style="background:#7b2d8b"><input type="radio" name="editDeptColor" value="#7b2d8b"></label>
+            <label class="color-swatch" style="background:#b83c00"><input type="radio" name="editDeptColor" value="#b83c00"></label>
+            <label class="color-swatch" style="background:#2EBD85"><input type="radio" name="editDeptColor" value="#2EBD85"></label>
+            <input type="color" value="#1B4D3E" class="color-picker-input" id="editDeptColorCustom" title="Custom color">
+          </div>
+        </div>
+        <div id="editDeptError" class="text-sm" style="color:var(--color-error);display:none;margin-top:4px"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('editDepartmentModal')">Cancel</button>
+        <button class="btn btn-primary" id="editDeptSubmitBtn" onclick="submitEditDepartment()"><span class="material-symbols-outlined">check</span> Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/global.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/permissions.js"></script>
+  <script src="js/settings.js"></script>
+</body>
+</html>

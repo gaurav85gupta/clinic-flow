@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clinic — Patients</title>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/patients.css">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+</head>
+<body>
+  <div class="app-container">
+    <main class="main-content">
+
+      <div class="page-header">
+        <div class="page-header-left">
+          <h1>Patients</h1>
+          <p id="patientsHeaderSubtitle">Loading patient stats…</p>
+        </div>
+        <div class="page-header-actions">
+          <button class="btn btn-secondary"><span class="material-symbols-outlined">download</span> Export</button>
+          <button class="btn btn-primary" onclick="openModal('addPatientModal')"><span class="material-symbols-outlined">person_add</span> Add Patient</button>
+        </div>
+      </div>
+
+      <!-- View Toggle -->
+      <div class="view-toggle-bar">
+        <div class="view-tabs">
+          <button class="view-tab active" data-view="table"><span class="material-symbols-outlined">table_rows</span> Table View</button>
+          <button class="view-tab" data-view="card"><span class="material-symbols-outlined">grid_view</span> Card View</button>
+        </div>
+        <div class="toolbar" style="margin:0">
+          <div class="search-box">
+            <span class="material-symbols-outlined">search</span>
+            <input type="text" placeholder="Search patients..." id="patientSearch">
+          </div>
+          <select class="filter-select"><option>All Status</option><option>Active</option><option>Inactive</option></select>
+          <select class="filter-select"><option>All Genders</option><option>Male</option><option>Female</option></select>
+        </div>
+      </div>
+
+      <div class="grid-main-side">
+
+        <!-- Patient Table / Cards -->
+        <div id="patientTableView">
+          <div class="card">
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Patient</th>
+                    <th>Age / Gender</th>
+                    <th>Contact</th>
+                    <th>Last Visit</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="patientTableBody"></tbody>
+              </table>
+            </div>
+            <div class="pagination">
+              <span>Loading…</span>
+              <div class="pagination-controls">
+                <button class="page-btn"><span class="material-symbols-outlined" style="font-size:16px">chevron_left</span></button>
+                <button class="page-btn active">1</button>
+                <button class="page-btn">2</button>
+                <button class="page-btn">3</button>
+                <span style="padding:0 4px;color:var(--color-outline)">...</span>
+                <button class="page-btn">125</button>
+                <button class="page-btn"><span class="material-symbols-outlined" style="font-size:16px">chevron_right</span></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Side Panel: Patient Profile (hidden by default, shown when a patient selected) -->
+        <div class="card card-padded" id="patientProfile" style="display:none">
+          <!-- Filled by JS when row clicked -->
+        </div>
+
+        <!-- Default: Quick Stats Panel -->
+        <div id="patientSidePanel">
+          <div class="card card-padded mb-md">
+            <div class="card-title mb-md">Patient Growth</div>
+            <div class="growth-stats">
+              <div class="growth-stat">
+                <div class="gs-num" id="gsTotalPatients">—</div>
+                <div class="gs-label">Total Patients</div>
+              </div>
+              <div class="growth-stat">
+                <div class="gs-num" style="color:var(--color-success)" id="gsThisMonth">—</div>
+                <div class="gs-label">This Month</div>
+              </div>
+              <div class="growth-stat">
+                <div class="gs-num" style="color:var(--color-info)" id="gsActive">—</div>
+                <div class="gs-label">Active</div>
+              </div>
+              <div class="growth-stat">
+                <div class="gs-num" style="color:var(--color-warning)" id="gsInactive">—</div>
+                <div class="gs-label">Inactive</div>
+              </div>
+            </div>
+          </div>
+          <!-- Age Distribution & Blood Groups: no backend aggregation endpoint
+               exists for these breakdowns (Patient schema has age/bloodGroup
+               fields, but no /api/reports route groups by them). Removed the
+               hardcoded mock percentages rather than display fake data.
+               See audit report: "Missing endpoints". -->
+          <div class="card card-padded mb-md">
+            <div class="card-title mb-md">Age Distribution</div>
+            <div class="text-muted text-sm" style="padding:8px 0">Not available — no backend endpoint yet for age-group breakdown.</div>
+          </div>
+          <div class="card card-padded">
+            <div class="card-title mb-md">Blood Groups</div>
+            <div class="text-muted text-sm" style="padding:8px 0">Not available — no backend endpoint yet for blood-group breakdown.</div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Patient Detail Modal -->
+  <div class="modal-overlay" id="patientDetailModal">
+    <div class="modal" style="max-width:680px">
+      <div class="modal-header">
+        <div class="modal-title">Patient Profile</div>
+        <button class="modal-close" onclick="closeModal('patientDetailModal')"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body" id="patientDetailBody"></div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('patientDetailModal')">Close</button>
+        <button class="btn btn-primary" id="patientDetailBookBtn" onclick="bookAppointmentFor(currentPatientDetailId, currentPatientDetailName)"><span class="material-symbols-outlined">event_available</span> Book Appointment</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Patient Modal -->
+  <div class="modal-overlay" id="addPatientModal">
+    <div class="modal" style="max-width:620px">
+      <div class="modal-header">
+        <div class="modal-title">Register New Patient</div>
+        <button class="modal-close" onclick="closeModal('addPatientModal')"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Full Name</label><input class="form-input" placeholder="Full name" id="newPatFullName"></div>
+          <div class="form-group"><label class="form-label">Phone</label><input class="form-input" placeholder="+91 98765 43210" id="newPatPhone"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Date of Birth</label><input class="form-input" type="date" id="newPatDob"></div>
+          <div class="form-group"><label class="form-label">Gender</label>
+            <select class="form-select" id="newPatGender"><option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" placeholder="email@example.com" id="newPatEmail"></div>
+          <div class="form-group"><label class="form-label">Blood Group</label>
+            <select class="form-select" id="newPatBloodGroup">
+              <option value="">—</option>
+              <option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>O+</option><option>O-</option><option>AB+</option><option>AB-</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Street</label><input class="form-input" placeholder="Street address" id="newPatStreet"></div>
+          <div class="form-group"><label class="form-label">City</label><input class="form-input" placeholder="City" id="newPatCity"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Medical History / Allergies</label><textarea class="form-textarea" placeholder="Known conditions, allergies (comma-separated)..." id="newPatConditions"></textarea></div>
+        <div id="newPatError" class="text-sm" style="color:var(--color-error);display:none;margin-top:4px"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('addPatientModal')">Cancel</button>
+        <button class="btn btn-primary" id="newPatSubmitBtn" onclick="submitNewPatient()"><span class="material-symbols-outlined">check</span> Register Patient</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/global.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/permissions.js"></script>
+  <script src="js/export-helpers.js"></script>
+  <script src="js/patients.js"></script>
+</body>
+</html>

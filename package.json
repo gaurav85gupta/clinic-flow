@@ -1,0 +1,120 @@
+{
+  "name": "medicore-clinic",
+  "version": "1.0.0",
+  "description": "MediCore Clinic Management System — Desktop Edition",
+  "author": {
+    "name": "MediCore",
+    "email": "support@medicore.app"
+  },
+  "license": "UNLICENSED",
+  "private": true,
+  "main": "electron/main.js",
+  "scripts": {
+    "start":          "node server/server.js",
+    "electron":       "electron .",
+    "electron:dev":   "cross-env NODE_ENV=development electron .",
+    "build":          "electron-builder --win --x64",
+    "build:dir":      "electron-builder --win --x64 --dir",
+    "build:portable": "electron-builder --win portable --x64",
+    "build:all":      "electron-builder --win --x64 --ia32",
+    "postinstall":    "electron-builder install-app-deps"
+  },
+  "dependencies": {
+    "bcryptjs":               "^2.4.3",
+    "cors":                   "^2.8.5",
+    "dotenv":                 "^16.4.5",
+    "electron-store":         "^8.2.0",
+    "exceljs":                "^4.4.0",
+    "express":                "^4.18.3",
+    "express-mongo-sanitize": "^2.2.0",
+    "express-rate-limit":     "^7.2.0",
+    "helmet":                 "^7.1.0",
+    "jsonwebtoken":            "^9.0.2",
+    "mongoose":               "^8.3.3",
+    "morgan":                 "^1.10.0",
+    "pdfkit":                 "^0.15.0"
+  },
+  "devDependencies": {
+    "cross-env":        "^7.0.3",
+    "electron":         "^30.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId":       "com.medicore.clinic",
+    "productName": "MediCore",
+    "copyright":   "© 2026 MediCore. All rights reserved.",
+    "directories": {
+      "output":         "dist",
+      "buildResources": "electron/assets"
+    },
+    "files": [
+      "electron/**/*",
+      "server/**/*",
+      "controllers/**/*",
+      "middleware/**/*",
+      "routes/**/*",
+      "models/**/*",
+      "css/**/*",
+      "js/**/*",
+      "*.html",
+      "package.json",
+      "!node_modules/.cache/**",
+      "!node_modules/**/test/**",
+      "!node_modules/**/*.md",
+      "!node_modules/**/*.map",
+      "!dist/**",
+      "!**/*.test.js",
+      "!**/*.spec.js",
+      "!**/.env.development",
+      "!**/.env.local"
+    ],
+    "extraResources": [
+      {
+        "from": "env/.env.production",
+        "to":   ".env"
+      }
+    ],
+    "asar": true,
+    "asarUnpack": [
+      "node_modules/mongoose/**",
+      "node_modules/mongodb/**",
+      "node_modules/bcryptjs/**",
+      "node_modules/pdfkit/**"
+    ],
+    "win": {
+      "target": [
+        { "target": "nsis",     "arch": ["x64"] },
+        { "target": "portable", "arch": ["x64"] }
+      ],
+      "icon":                      "electron/assets/icon.ico",
+      "requestedExecutionLevel":   "asInvoker",
+      "signAndEditExecutable":     true,
+      "verifyUpdateCodeSignature": false
+    },
+    "nsis": {
+      "oneClick":                           false,
+      "perMachine":                         false,
+      "allowToChangeInstallationDirectory": true,
+      "allowElevation":                     true,
+      "installerIcon":                      "electron/assets/icon.ico",
+      "uninstallerIcon":                    "electron/assets/icon.ico",
+      "installerHeaderIcon":                "electron/assets/icon.ico",
+      "createDesktopShortcut":              true,
+      "createStartMenuShortcut":            true,
+      "shortcutName":                       "MediCore",
+      "artifactName":                       "MediCore_Setup_${version}.exe",
+      "deleteAppDataOnUninstall":           false,
+      "installerLanguages":                 ["en_US"],
+      "language":                           "1033",
+      "menuCategory":                       "MediCore",
+      "runAfterFinish":                     true
+    },
+    "portable": {
+      "artifactName": "MediCore_Portable_${version}.exe"
+    },
+    "publish": null,
+    "extraMetadata": {
+      "main": "electron/main.js"
+    }
+  }
+}

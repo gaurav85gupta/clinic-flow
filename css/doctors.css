@@ -1,0 +1,586 @@
+/* ============================================================
+   DASHBOARD STYLES
+   ============================================================ */
+
+/* ---- Compact section density (denser than global default so more
+   fits without scrolling; only applied within dashboard cards) ---- */
+.card-padded { padding: 14px 16px; }
+.card-header { margin-bottom: 10px; }
+.card-title { font-size: 13.5px; }
+.card-subtitle { font-size: 11.5px; }
+
+.dash-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 280px;
+  grid-template-rows: auto;
+  gap: 14px;
+  align-items: start;
+}
+
+/* Revenue chart spans 2 cols */
+.dash-grid > .card:nth-child(1) { grid-column: 1 / 3; }
+/* Today's appts */
+.dash-grid > .card:nth-child(2) { grid-column: 1; }
+/* Doctor status */
+.dash-grid > .card:nth-child(3) { grid-column: 2; }
+/* Dept performance */
+.dash-grid > .card:nth-child(4) { grid-column: 1; }
+/* Recent activity */
+.dash-grid > .card:nth-child(5) { grid-column: 2; }
+/* Phase D4 — Pending Tasks & Alerts: full-width row below Recent
+   Activity/Department Performance, left of the right column. */
+.dash-grid > .card:nth-child(6) { grid-column: 1 / 3; }
+/* Right column — NOT row-spanned to match left/middle column height
+   anymore: that forced it to stretch full height even when its own
+   content (calendar + upcoming + quick actions) is much shorter,
+   leaving a large empty gap at the bottom (see screenshots). It now
+   just sits in its own column and takes exactly the height its
+   content needs. */
+.right-column { grid-column: 3; align-self: start; display: flex; flex-direction: column; gap: 14px; }
+
+/* ---- Internal scroll caps: keep long lists bounded so the PAGE
+   doesn't grow, only the card's own list scrolls (thin scrollbar
+   already provided by global.css's ::-webkit-scrollbar rule). ---- */
+.scroll-capped { max-height: 260px; overflow-y: auto; padding-right: 2px; }
+.scroll-capped-sm { max-height: 190px; overflow-y: auto; padding-right: 2px; }
+
+/* ---- Collapsed/empty widgets take minimal vertical space instead
+   of a full fixed-height block — applied via JS by toggling this
+   class onto the card when a section has no content to show. ---- */
+.card-compact-empty .card-header { margin-bottom: 0; }
+.card-compact-empty canvas { display: none; }
+
+/* ---- Collapsible card sections (mini calendar): the person can
+   fold a rarely-needed widget away to reclaim vertical space in the
+   right column without losing it — it's a toggle, not a removal. ---- */
+.card-collapse-btn {
+  width: 26px; height: 26px;
+  border-radius: var(--radius-md);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--color-on-surface-variant);
+  background: transparent;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+.card-collapse-btn:hover { background: var(--color-background); color: var(--color-on-surface); }
+.card-collapse-btn .material-symbols-outlined { font-size: 18px; transition: transform 0.15s ease; }
+.card-collapsible.collapsed .card-collapse-btn .material-symbols-outlined { transform: rotate(-90deg); }
+.card-collapsible.collapsed .card-collapsible-body { display: none; }
+
+/* ---- "Show more" link under a capped list — appears only when JS
+   detects the list content overflowed the cap (see dashboard.js). ---- */
+.list-expand-btn {
+  display: block;
+  width: 100%;
+  text-align: center;
+  padding: 6px 0 2px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--color-secondary-light);
+  background: transparent;
+  cursor: pointer;
+  border: none;
+}
+.list-expand-btn:hover { color: var(--color-secondary); }
+
+/* Chart toggle */
+.chart-toggle { display: flex; gap: 4px; background: var(--color-background); border-radius: var(--radius-pill); padding: 3px; }
+.chart-tab {
+  padding: 5px 14px;
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-on-surface-variant);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.chart-tab.active { background: var(--color-surface); color: var(--color-primary); }
+
+/* Appointment List */
+.appt-list { display: flex; flex-direction: column; gap: 4px; }
+.appt-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-surface-low);
+}
+.appt-item:last-child { border-bottom: none; }
+.appt-time { font-size: 11px; font-weight: 700; color: var(--color-on-surface-variant); width: 68px; flex-shrink: 0; }
+.appt-info { flex: 1; min-width: 0; }
+.appt-name { font-size: 13px; font-weight: 600; color: var(--color-on-surface); }
+.appt-doctor { font-size: 11px; color: var(--color-on-surface-variant); margin-top: 1px; }
+
+/* Doctor Status */
+.doctor-status-list { display: flex; flex-direction: column; gap: 12px; }
+.doctor-status-item { display: flex; align-items: center; gap: 10px; }
+
+/* Dept Bars */
+.dept-bars { display: flex; flex-direction: column; gap: 12px; }
+.dept-bar-item { display: flex; flex-direction: column; gap: 5px; }
+.dept-bar-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--color-on-surface-variant); }
+.dept-bar-label .font-semibold { color: var(--color-on-surface); font-weight: 600; }
+.dept-bar-track { height: 7px; background: var(--color-surface-container); border-radius: var(--radius-full); overflow: hidden; }
+.dept-bar-fill { height: 100%; background: var(--gradient-brand); border-radius: var(--radius-full); transition: width 0.6s ease; }
+
+/* Activity */
+.activity-list { display: flex; flex-direction: column; }
+.activity-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--color-surface-low); }
+.activity-item:last-child { border-bottom: none; }
+.activity-icon {
+  width: 30px; height: 30px;
+  border-radius: var(--radius-full);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  font-size: 15px;
+}
+.activity-icon.green { background: var(--color-success-container); color: var(--color-success); }
+.activity-icon.blue { background: var(--color-info-container); color: var(--color-info); }
+.activity-icon.orange { background: var(--color-warning-container); color: var(--color-warning); }
+.activity-icon.teal { background: rgba(46,189,133,0.12); color: var(--color-secondary-light); }
+/* Phase D3 — added for Settings/Clinic-level activity rows (no
+   existing accent fit; reuses the same neutral surface/on-surface
+   tokens as .badge-inactive elsewhere, not a new hardcoded color). */
+.activity-icon.neutral { background: var(--color-surface-container); color: var(--color-on-surface-variant); }
+.activity-body { flex: 1; min-width: 0; }
+.activity-title { font-size: 12.5px; font-weight: 600; color: var(--color-on-surface); }
+/* Actor + relative-time on one compact line instead of 2-3 stacked
+   rows (title / description / actor / absolute-time) — cuts each
+   activity item's height roughly in half so more fit before the
+   internal scroll cap kicks in. */
+.activity-desc {
+  font-size: 11.5px;
+  color: var(--color-on-surface-variant);
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.activity-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0; }
+.activity-time { font-size: 10.5px; color: var(--color-outline); white-space: nowrap; }
+
+/* Mini Calendar */
+.mini-cal-header { display: grid; grid-template-columns: repeat(7,1fr); text-align: center; margin-bottom: 6px; }
+.mini-cal-day-label { font-size: 10px; font-weight: 700; color: var(--color-outline); padding: 4px 0; }
+.mini-cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; }
+.mini-cal-cell {
+  height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition);
+  color: var(--color-on-surface);
+}
+.mini-cal-cell:hover { background: var(--color-surface-low); }
+.mini-cal-cell.today { background: var(--gradient-brand); color: #fff; font-weight: 700; }
+.mini-cal-cell.has-event::after { content:''; display:block; width:4px; height:4px; border-radius:50%; background:var(--color-secondary-light); position:absolute; bottom:2px; }
+.mini-cal-cell.has-event { position:relative; }
+.mini-cal-cell.other-month { color: var(--color-outline-variant); }
+
+/* Schedule */
+.schedule-list { display: flex; flex-direction: column; gap: 10px; }
+.schedule-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px;
+  background: var(--color-background);
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--color-secondary-light);
+}
+.schedule-time { font-size: 11px; font-weight: 700; color: var(--color-on-surface-variant); width: 64px; flex-shrink: 0; }
+.schedule-title { font-size: 13px; font-weight: 600; color: var(--color-on-surface); }
+.schedule-sub { font-size: 11px; color: var(--color-on-surface-variant); }
+
+/* Quick Actions */
+.quick-actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.quick-action-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 14px 8px;
+  background: var(--color-background);
+  border-radius: var(--radius-md);
+  font-size: 11px; font-weight: 600;
+  color: var(--color-on-surface-variant);
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition);
+  border: 1.5px solid transparent;
+}
+.quick-action-btn .material-symbols-outlined { font-size: 22px; color: var(--color-primary-container); }
+.quick-action-btn:hover { border-color: var(--color-secondary-light); background: var(--color-success-container); color: var(--color-primary); }
+
+/* Pending Tasks & Alerts (Phase D4) — reuses .badge-status from
+   global.css for the priority pill; only the 4 priority color
+   variants below are new, and they reuse the same semantic tokens
+   (--color-error/-warning/-info/-on-surface-variant) as every other
+   badge in the app, not new hardcoded colors. */
+.tasks-list { display: flex; flex-direction: column; gap: 8px; }
+.task-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 12px;
+  background: var(--color-background);
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--color-surface-container);
+}
+.task-card.priority-critical { border-left-color: var(--color-error); }
+.task-card.priority-high     { border-left-color: var(--color-warning); }
+.task-card.priority-medium   { border-left-color: var(--color-info); }
+.task-card.priority-low      { border-left-color: var(--color-outline-variant); }
+.task-card-body { flex: 1; min-width: 0; }
+.task-card-title-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.task-card-title { font-size: 13px; font-weight: 700; color: var(--color-on-surface); }
+.task-card-count {
+  font-family: 'Manrope', sans-serif;
+  font-size: 11px; font-weight: 800;
+  color: var(--color-on-surface-variant);
+  background: var(--color-surface-container);
+  border-radius: var(--radius-full);
+  padding: 1px 8px;
+}
+.task-card-desc { font-size: 12px; color: var(--color-on-surface-variant); margin-top: 3px; }
+.badge-priority-critical { background: var(--color-error-container); color: var(--color-error); }
+.badge-priority-high     { background: var(--color-warning-container); color: var(--color-warning); }
+.badge-priority-medium   { background: rgba(0, 97, 164, 0.10); color: var(--color-info); }
+.badge-priority-low      { background: var(--color-surface-container); color: var(--color-on-surface-variant); }
+.task-card-action { flex-shrink: 0; }
+
+@media (max-width: 640px) {
+  .task-card { flex-wrap: wrap; }
+  .task-card-action { width: 100%; }
+  .task-card-action .btn { width: 100%; justify-content: center; }
+}
+
+@media (max-width: 1200px) {
+  .dash-grid { grid-template-columns: 1fr 1fr; }
+  .dash-grid > .card:nth-child(1) { grid-column: 1 / 3; }
+  .right-column { grid-column: 1 / 3; grid-row: auto; flex-direction: row; flex-wrap: wrap; }
+  .right-column > * { flex: 1; min-width: 240px; }
+}
+@media (max-width: 700px) {
+  .dash-grid { grid-template-columns: 1fr; }
+  .dash-grid > .card:nth-child(1),
+  .dash-grid > .card:nth-child(2),
+  .dash-grid > .card:nth-child(6) { grid-column: 1; }
+  .right-column { grid-column: 1; flex-direction: column; }
+}
+
+/* ============================================================
+   TODAY'S QUEUE (Phase D5)
+   All data from GET /api/dashboard/queue — see dashboard.js
+   loadQueue(). Reuses .badge-status classes from global.css and
+   the same summary-pill pattern as .today-stats in appointments.css,
+   rather than introducing a parallel color system.
+   ============================================================ */
+
+.queue-widget-card .card-header { align-items: flex-start; flex-wrap: wrap; gap: 12px; }
+.queue-filters { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.queue-summary-strip {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.queue-summary-pill {
+  text-align: center;
+  padding: 7px 4px;
+  background: var(--color-background);
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--color-surface-container);
+}
+.queue-summary-pill .qs-num { font-family: 'Manrope', sans-serif; font-size: 16px; font-weight: 800; color: var(--color-on-surface); }
+.queue-summary-pill .qs-label { font-size: 8.5px; font-weight: 600; color: var(--color-on-surface-variant); text-transform: uppercase; letter-spacing: 0.03em; margin-top: 1px; }
+.queue-summary-pill.qs-waiting { border-left-color: var(--color-warning); }
+.queue-summary-pill.qs-checkedin { border-left-color: var(--color-info); }
+.queue-summary-pill.qs-completed { border-left-color: var(--color-success); }
+.queue-summary-pill.qs-cancelled,
+.queue-summary-pill.qs-noshow { border-left-color: var(--color-error); }
+
+.queue-list { display: flex; flex-direction: column; gap: 8px; }
+.queue-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--color-background);
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--color-secondary-light);
+  flex-wrap: wrap;
+}
+.queue-item-num {
+  width: 26px; height: 26px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-container);
+  color: var(--color-on-surface-variant);
+  font-size: 11px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.queue-item-info { flex: 1; min-width: 160px; }
+.queue-item-name { font-size: 13px; font-weight: 700; color: var(--color-on-surface); display: flex; align-items: center; gap: 6px; }
+.queue-item-meta { font-size: 11px; color: var(--color-on-surface-variant); margin-top: 2px; }
+.queue-item-wait { font-size: 11px; font-weight: 700; color: var(--color-on-surface-variant); white-space: nowrap; }
+.queue-item-wait.qw-overdue { color: var(--color-error); }
+.queue-item-actions { display: flex; gap: 4px; flex-shrink: 0; }
+
+/* Priority flags (future-ready layout only — always hidden today,
+   see server.js getDashboardQueue: priority.{emergency,senior,vip}
+   are always false until a future phase adds real backend fields). */
+.queue-priority-flag {
+  width: 20px; height: 20px;
+  border-radius: var(--radius-full);
+  display: none;
+  align-items: center; justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+.queue-priority-flag.qp-emergency { background: var(--color-error-container); color: var(--color-error); }
+.queue-priority-flag.qp-senior { background: var(--color-info-container); color: var(--color-info); }
+.queue-priority-flag.qp-vip { background: var(--color-warning-container); color: var(--color-warning); }
+
+@media (max-width: 900px) {
+  .queue-summary-strip { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 560px) {
+  .queue-summary-strip { grid-template-columns: repeat(2, 1fr); }
+  .queue-item { flex-direction: column; align-items: flex-start; }
+  .queue-item-actions { width: 100%; justify-content: flex-end; }
+}
+
+/* ---- Top row: Queue + Doctor Performance side-by-side on wide
+   screens instead of full-width stacked blocks — halves the
+   vertical space these two widgets used to take together.
+   align-items:start + each card's own height (not stretch) so a
+   card with 1 doctor doesn't get force-stretched to match a queue
+   with 6 patients, or vice versa — every box hugs its own content. ---- */
+.top-widgets-row {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 14px;
+  margin-bottom: 14px;
+  align-items: start;
+}
+.top-widgets-row > .card { height: auto; align-self: start; }
+@media (max-width: 1100px) {
+  .top-widgets-row { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   DOCTORS PAGE — Doctor Cards Grid
+   Rendered by doctors.js renderDoctorCards() into #doctorCards.
+   Follows the same card language as .doc-perf-card below, but this
+   is the primary full-detail card for the Doctors page itself
+   (bigger avatar, 3-stat row, contact meta, footer actions).
+   ============================================================ */
+
+.doctor-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.doctor-card {
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-surface-container);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  flex-direction: column;
+}
+.doctor-card:hover {
+  border-color: var(--color-secondary-light);
+}
+
+.doctor-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.doctor-card-avatar {
+  width: 44px; height: 44px;
+  border-radius: var(--radius-full);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  font-family: 'Manrope', sans-serif;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.doctor-card-header > div:nth-child(2) { flex: 1; min-width: 0; }
+.doctor-card-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-on-surface);
+  font-family: 'Manrope', sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.doctor-card-spec {
+  font-size: 12px;
+  color: var(--color-on-surface-variant);
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.doctor-card-header .badge-status { flex-shrink: 0; }
+
+.doctor-card-body { flex: 1; }
+
+.doctor-stat-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.doctor-stat {
+  text-align: center;
+  background: var(--color-background);
+  border-radius: var(--radius-md);
+  padding: 8px 4px;
+}
+.doctor-stat-val {
+  font-family: 'Manrope', sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--color-on-surface);
+}
+.doctor-stat-lbl {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--color-on-surface-variant);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 1px;
+}
+
+.doctor-card-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-surface-low);
+}
+.doctor-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--color-on-surface-variant);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.doctor-meta-row .material-symbols-outlined { font-size: 16px; flex-shrink: 0; }
+
+.doctor-card-footer {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+}
+.doctor-card-footer .btn { flex: 1; }
+
+@media (max-width: 700px) {
+  .doctor-cards-grid { grid-template-columns: 1fr; }
+}
+
+/* Doctor Profile modal header (id="doctorModalBody" — doctors.js
+   renderDoctorDetail()) */
+.doctor-modal-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--color-surface-low);
+}
+.doctor-modal-avatar {
+  width: 56px; height: 56px;
+  border-radius: var(--radius-full);
+  background: var(--gradient-brand);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 800;
+  font-family: 'Manrope', sans-serif;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   DOCTOR PERFORMANCE TODAY (Phase D6)
+   All data from GET /api/dashboard/doctor-performance — see
+   dashboard.js loadDoctorPerformance(). Reuses .doctor-card-avatar
+   sizing/typography conventions from doctors.css and .badge-status
+   from global.css rather than introducing new visual primitives.
+   ============================================================ */
+
+.doc-perf-widget-card .card-header { align-items: center; flex-wrap: wrap; gap: 12px; }
+.doc-perf-sort { display: flex; align-items: center; }
+
+.doc-perf-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 10px;
+  /* When there's only 1-2 doctors, auto-fill + 1fr used to stretch
+     that single card across the whole row width, leaving an odd
+     empty gap beside it (see the "Doctor Performance Today" empty
+     space in the screenshots). justify-content:start + a max-width
+     on the card itself keeps each card at its natural size instead
+     of stretching to fill unused grid tracks. */
+  justify-content: start;
+}
+
+.doc-perf-card {
+  background: var(--color-background);
+  border-radius: var(--radius-lg);
+  padding: 11px;
+  border: 1.5px solid var(--color-surface-container);
+  position: relative;
+  width: 100%;
+  max-width: 260px;
+}
+.doc-perf-rank {
+  position: absolute;
+  top: 10px; right: 10px;
+  width: 22px; height: 22px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-container);
+  color: var(--color-on-surface-variant);
+  font-size: 11px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+}
+.doc-perf-card.rank-1 .doc-perf-rank { background: var(--gradient-brand); color: #fff; }
+
+.doc-perf-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding-right: 26px; }
+.doc-perf-avatar { width: 40px; height: 40px; border-radius: var(--radius-full); font-size: 14px; font-weight: 800; font-family: 'Manrope', sans-serif; color: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.doc-perf-name { font-size: 13px; font-weight: 700; color: var(--color-on-surface); line-height: 1.3; }
+.doc-perf-dept { font-size: 11px; color: var(--color-on-surface-variant); margin-top: 1px; }
+
+.doc-perf-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.doc-perf-stat { text-align: center; background: var(--color-surface); border-radius: var(--radius-md); padding: 8px 4px; }
+.doc-perf-stat-val { font-family: 'Manrope', sans-serif; font-size: 16px; font-weight: 800; color: var(--color-on-surface); }
+.doc-perf-stat-lbl { font-size: 9px; font-weight: 600; color: var(--color-on-surface-variant); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 1px; }
+.doc-perf-revenue { grid-column: 1 / 3; }
+.doc-perf-revenue .doc-perf-stat-val { color: var(--color-secondary-light); }
+
+.doc-perf-meta-row { display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: var(--color-on-surface-variant); margin-bottom: 10px; }
+.doc-perf-next { font-weight: 600; color: var(--color-on-surface); }
+
+.doc-perf-actions { display: flex; gap: 4px; }
+.doc-perf-actions .tbl-action-btn { flex: 1; width: auto; }
+
+@media (max-width: 700px) {
+  .doc-perf-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 460px) {
+  .doc-perf-grid { grid-template-columns: 1fr; }
+}

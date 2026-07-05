@@ -1,0 +1,353 @@
+/* REPORTS */
+
+/* ============================================================
+   EXECUTIVE KPI CARDS (Phase R1)
+   6-up responsive strip: 6 / 3+3 / 2-per-row / 1-per-row.
+   Built on top of the shared .kpi-card tokens in global.css but
+   with its own grid + a richer card body (progress bar, skeleton,
+   per-card error state) since these cards carry more than the
+   simple label/value/trend cards elsewhere in the app.
+   ============================================================ */
+.exec-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.exec-kpi-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  box-shadow: var(--shadow-card);
+  border: 1px solid transparent;
+  transition: var(--transition);
+  display: flex;
+  flex-direction: column;
+  min-height: 148px;
+  box-sizing: border-box;
+}
+.exec-kpi-card:hover { border-color: var(--color-surface-container); }
+
+.exec-kpi-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.exec-kpi-icon-wrap {
+  width: 36px; height: 36px;
+  border-radius: var(--radius-full);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  font-size: 18px;
+}
+.exec-kpi-icon-wrap.green  { background: var(--color-success-container); color: var(--color-success); }
+.exec-kpi-icon-wrap.blue   { background: var(--color-info-container); color: var(--color-info); }
+.exec-kpi-icon-wrap.teal   { background: rgba(46, 189, 133, 0.12); color: var(--color-secondary-light); }
+.exec-kpi-icon-wrap.purple { background: rgba(123, 45, 139, 0.12); color: #7b2d8b; }
+.exec-kpi-icon-wrap.red    { background: var(--color-error-container); color: var(--color-error); }
+
+.exec-kpi-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--color-on-surface-variant);
+  line-height: 1.3;
+}
+
+.exec-kpi-value {
+  font-family: 'Manrope', sans-serif;
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--color-on-surface);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin-bottom: 6px;
+  word-break: break-word;
+}
+
+.exec-kpi-compare {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 700;
+  width: fit-content;
+  margin-bottom: auto;
+}
+.exec-kpi-compare.up { color: var(--color-success); }
+.exec-kpi-compare.down { color: var(--color-error); }
+.exec-kpi-compare.neutral { color: var(--color-on-surface-variant); }
+.exec-kpi-compare .material-symbols-outlined { font-size: 14px; }
+
+.exec-kpi-footer {
+  font-size: 11px;
+  color: var(--color-on-surface-variant);
+  margin-top: 8px;
+  line-height: 1.4;
+}
+
+/* Collection Rate progress bar */
+.exec-kpi-bar-track {
+  height: 6px;
+  background: var(--color-surface-container);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-top: 8px;
+}
+.exec-kpi-bar-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 0.3s ease;
+}
+.exec-kpi-bar-fill.good { background: var(--color-success); }
+.exec-kpi-bar-fill.warn { background: var(--color-warning); }
+.exec-kpi-bar-fill.bad  { background: var(--color-error); }
+
+/* Skeleton loading state */
+.exec-kpi-card.is-loading .exec-kpi-skel {
+  display: block;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(90deg, var(--color-surface-container) 25%, var(--color-surface-low) 37%, var(--color-surface-container) 63%);
+  background-size: 400% 100%;
+  animation: exec-kpi-shimmer 1.4s ease infinite;
+}
+.exec-kpi-card.is-loading .exec-kpi-real { display: none; }
+.exec-kpi-card:not(.is-loading) .exec-kpi-skel { display: none; }
+.exec-kpi-skel-icon { width: 36px; height: 36px; border-radius: var(--radius-full); }
+.exec-kpi-skel-label { width: 70%; height: 10px; margin-bottom: 10px; }
+.exec-kpi-skel-value { width: 85%; height: 24px; margin-bottom: 8px; }
+.exec-kpi-skel-sub { width: 55%; height: 11px; }
+@keyframes exec-kpi-shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+/* Error state */
+.exec-kpi-card.has-error .exec-kpi-real,
+.exec-kpi-card.has-error .exec-kpi-skel { display: none; }
+.exec-kpi-error {
+  display: none;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  margin: auto 0;
+}
+.exec-kpi-card.has-error .exec-kpi-error { display: flex; }
+.exec-kpi-error-msg {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-error);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.exec-kpi-error-msg .material-symbols-outlined { font-size: 16px; }
+.exec-kpi-retry-btn {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-primary);
+  background: var(--color-background);
+  border: 1px solid var(--color-surface-container);
+  border-radius: var(--radius-pill);
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.exec-kpi-retry-btn:hover { background: var(--color-surface-container); }
+.exec-kpi-retry-btn .material-symbols-outlined { font-size: 14px; }
+
+/* Responsive: 6 -> 3+3 -> 2/row -> 1/row */
+@media (max-width: 1400px) {
+  .exec-kpi-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 760px) {
+  .exec-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 460px) {
+  .exec-kpi-grid { grid-template-columns: 1fr; }
+}
+
+.reports-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.appt-analytics-layout { display:flex; align-items:center; gap:16px; }
+.appt-analytics-legend { display:flex; flex-direction:column; gap:8px; min-width:140px; }
+.legend-item { display:flex; align-items:center; gap:8px; font-size:12px; }
+.legend-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.legend-label { color:var(--color-on-surface-variant); }
+.legend-val { margin-left:auto; font-weight:700; color:var(--color-on-surface); }
+
+.insights-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+.insight-card { display:flex; flex-direction:column; gap:8px; }
+.insight-icon { width:44px; height:44px; border-radius:var(--radius-full); display:flex; align-items:center; justify-content:center; font-size:22px; }
+.insight-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--color-on-surface-variant); }
+.insight-value { font-family:'Manrope',sans-serif; font-size:24px; font-weight:800; color:var(--color-on-surface); }
+.insight-desc { font-size:12px; color:var(--color-on-surface-variant); line-height:1.5; }
+
+.perf-bar { height:6px; background:var(--color-surface-container); border-radius:var(--radius-full); overflow:hidden; width:80px; display:inline-block; }
+.perf-bar-fill { height:100%; background:var(--gradient-brand); border-radius:var(--radius-full); }
+
+@media (max-width:1100px) {
+  .reports-grid-2 { grid-template-columns:1fr; }
+  .insights-grid { grid-template-columns:repeat(2,1fr); }
+  .appt-analytics-layout { flex-direction:column; }
+}
+@media (max-width:600px) {
+  .insights-grid { grid-template-columns:1fr; }
+}
+/* ============================================================
+   CORE ANALYTICS (Phase R2)
+   Revenue Trend 60% / Appointment Status 20% / Top Departments 20%.
+   Desktop: 3-up. Tablet: Revenue full-width, Appt+Depts side by side.
+   Mobile: stacked. Revenue always gets layout priority; the donut
+   and bar widgets never stretch to match its height artificially —
+   each sizes to its own content via core-widget-body's min-height.
+   ============================================================ */
+.core-analytics-grid {
+  display: grid;
+  grid-template-columns: 3fr 1fr 1fr;
+  gap: 16px;
+  align-items: stretch;
+}
+.core-widget { display: flex; flex-direction: column; }
+.core-widget .card-header { margin-bottom: 12px; }
+.core-widget-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 240px;
+  position: relative;
+}
+.core-widget-revenue .core-widget-body { min-height: 260px; }
+.core-widget-appt .core-widget-body,
+.core-widget-depts .core-widget-body { min-height: 240px; justify-content: center; }
+
+/* Chart view toggle (By Day / By Week / By Month) */
+.chart-view-toggle {
+  display: flex;
+  background: var(--color-background);
+  border-radius: var(--radius-pill);
+  padding: 3px;
+  border: 1px solid var(--color-surface-low);
+  flex-shrink: 0;
+}
+.cv-btn {
+  padding: 5px 12px;
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-on-surface-variant);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+.cv-btn:hover { color: var(--color-on-surface); }
+.cv-btn.active { background: var(--color-primary-container); color: #fff; }
+
+/* Skeleton loading (shared shimmer look, matches exec-kpi-skel) */
+.skel-shimmer {
+  background: linear-gradient(90deg, var(--color-surface-container) 25%, var(--color-surface-low) 37%, var(--color-surface-container) 63%);
+  background-size: 400% 100%;
+  animation: exec-kpi-shimmer 1.4s ease infinite;
+  border-radius: var(--radius-md);
+}
+.core-widget-skel { display: flex; flex-direction: column; gap: 10px; flex: 1; }
+.core-widget-revenue .skel-line { flex: 1; min-height: 220px; border-radius: var(--radius-lg); }
+.skel-donut { width: 140px; height: 140px; border-radius: 50%; margin: 20px auto; }
+.skel-bar-row { height: 46px; border-radius: var(--radius-md); }
+
+/* Empty / error states — shared shape across all three widgets */
+.core-widget-empty, .core-widget-error {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--color-on-surface-variant);
+  font-size: 13px;
+  text-align: center;
+  padding: 24px 12px;
+}
+.core-widget-empty .material-symbols-outlined { font-size: 32px; opacity: 0.5; }
+.core-widget-error .material-symbols-outlined { font-size: 28px; color: var(--color-error); }
+.core-widget-error div { color: var(--color-error); font-weight: 600; }
+
+/* Appointment Status donut */
+.appt-donut-wrap { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0; }
+.appt-donut-canvas-wrap {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  flex-shrink: 0;
+  margin: 0 auto;
+}
+.appt-donut-center {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  pointer-events: none;
+}
+.appt-donut-center-val { font-family: 'Manrope', sans-serif; font-size: 20px; font-weight: 800; color: var(--color-on-surface); line-height: 1; }
+.appt-donut-center-label { font-size: 9px; color: var(--color-on-surface-variant); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }
+.appt-analytics-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+.appt-analytics-legend .legend-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  min-width: 0;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--color-surface-low);
+}
+.appt-analytics-legend .legend-item:last-child { border-bottom: none; padding-bottom: 0; }
+.appt-analytics-legend .legend-label {
+  color: var(--color-on-surface-variant);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.appt-analytics-legend .legend-val {
+  flex-basis: 100%;
+  margin-left: 16px;
+  font-weight: 800;
+  font-size: 13px;
+  color: var(--color-on-surface);
+}
+
+/* Top Departments — horizontal progress bars */
+.dept-bar-list { display: flex; flex-direction: column; gap: 14px; flex: 1; justify-content: center; }
+.dept-bar-row { display: flex; flex-direction: column; gap: 4px; }
+.dept-bar-row-top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.dept-bar-name { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: var(--color-on-surface); min-width: 0; }
+.dept-bar-name span.dn-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dept-top-badge {
+  font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.03em;
+  background: var(--color-success-container); color: var(--color-success);
+  border-radius: var(--radius-pill); padding: 2px 6px; flex-shrink: 0;
+}
+.dept-bar-pct { font-size: 13px; font-weight: 800; color: var(--color-primary); flex-shrink: 0; }
+.dept-bar-track { height: 8px; background: var(--color-surface-container); border-radius: var(--radius-full); overflow: hidden; }
+.dept-bar-fill { height: 100%; border-radius: var(--radius-full); background: var(--gradient-brand); transition: width 0.4s ease; }
+.dept-bar-meta { font-size: 11px; color: var(--color-on-surface-variant); display: flex; gap: 10px; }
+
+/* Responsive — Revenue full width -> Appt+Depts side by side -> stack */
+@media (max-width: 1250px) {
+  .core-analytics-grid { grid-template-columns: 1fr 1fr; }
+  .core-widget-revenue { grid-column: 1 / -1; }
+}
+@media (max-width: 720px) {
+  .core-analytics-grid { grid-template-columns: 1fr; }
+  .core-widget-revenue { grid-column: auto; }
+  .appt-donut-wrap { flex-direction: column; }
+}

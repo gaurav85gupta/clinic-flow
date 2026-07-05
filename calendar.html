@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clinic — Calendar</title>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/calendar.css">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <style>
+    .patient-search-results {
+      position: absolute; top: 100%; left: 0; right: 0; z-index: 50;
+      background: var(--color-surface, #fff); border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 8px; margin-top: 4px; max-height: 220px; overflow-y: auto;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+    .patient-search-results .psr-item { padding: 8px 12px; cursor: pointer; font-size: 13px; }
+    .patient-search-results .psr-item:hover { background: rgba(0,0,0,0.04); }
+    .patient-search-results .psr-empty { padding: 8px 12px; font-size: 12px; color: var(--color-on-surface-variant, #707974); }
+    .patient-search-results .psr-add-new { border-top: 1px solid rgba(0,0,0,0.08); color: var(--color-secondary-light, #2EBD85); font-weight: 600; }
+    .patient-search-results .psr-inline-form { padding: 10px 12px; }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <main class="main-content">
+
+      <div class="page-header">
+        <div class="page-header-left">
+          <h1>Calendar</h1>
+          <p>Schedule and manage appointments visually</p>
+        </div>
+        <div class="page-header-actions">
+          <div class="cal-view-toggle">
+            <button class="cal-view-btn active" data-view="month">Month</button>
+            <button class="cal-view-btn" data-view="week">Week</button>
+            <button class="cal-view-btn" data-view="day">Day</button>
+          </div>
+          <button class="btn btn-primary" onclick="openModal('addApptModal')"><span class="material-symbols-outlined">add</span> New Appointment</button>
+        </div>
+      </div>
+
+      <div class="cal-layout">
+        <!-- Main Calendar -->
+        <div class="cal-main card card-padded">
+          <div class="cal-header">
+            <button class="btn-ghost btn btn-icon" id="prevBtn"><span class="material-symbols-outlined">chevron_left</span></button>
+            <h2 class="cal-month-title" id="calTitle">June 2026</h2>
+            <button class="btn-ghost btn btn-icon" id="nextBtn"><span class="material-symbols-outlined">chevron_right</span></button>
+            <button class="btn btn-secondary btn-sm" id="todayBtn" style="margin-left:8px">Today</button>
+          </div>
+          <div id="calendarView"></div>
+        </div>
+
+        <!-- Side Panel -->
+        <div class="cal-side">
+          <div class="card card-padded mb-md">
+            <div class="card-title mb-md">Doctor Filter</div>
+            <div class="doctor-filter-list" id="doctorFilterList"></div>
+          </div>
+          <div class="card card-padded">
+            <div class="card-header">
+              <div class="card-title">Selected Day</div>
+              <span class="text-muted text-xs" id="selectedDateLabel">Jun 19</span>
+            </div>
+            <div id="dayAppointments"><div class="text-muted text-sm" style="padding:8px 0">Click a day to see appointments</div></div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Add Appointment Modal -->
+  <div class="modal-overlay" id="addApptModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Schedule Appointment</div>
+        <button class="modal-close" onclick="closeModal('addApptModal')"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group" style="position:relative">
+            <label class="form-label">Patient</label>
+            <input class="form-input" placeholder="Search patient..." id="calApptPatientSearch" autocomplete="off">
+            <input type="hidden" id="calApptPatientId">
+            <div id="calApptPatientResults" class="patient-search-results" style="display:none"></div>
+          </div>
+          <div class="form-group"><label class="form-label">Doctor</label>
+            <select class="form-select" id="calApptDoctorId"><option value="">Loading doctors…</option></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Date</label><input class="form-input" type="date" id="calApptModalDate"></div>
+          <div class="form-group"><label class="form-label">Time</label>
+            <div style="display:flex;gap:8px">
+              <input class="form-input" type="time" value="09:00" id="calApptStartTime" onchange="applyApptDuration('calApptStartTime','calApptEndTime')">
+              <input class="form-input" type="time" value="09:30" id="calApptEndTime">
+            </div>
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label">Type</label>
+          <select class="form-select" id="calApptType">
+            <option>Consultation</option><option>Follow-up</option><option>Telemedicine</option><option>Procedure</option><option>Other</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Notes</label><textarea class="form-textarea" id="calApptNotes"></textarea></div>
+        <div id="calApptError" class="text-sm" style="color:var(--color-error);display:none;margin-top:4px"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('addApptModal')">Cancel</button>
+        <button class="btn btn-primary" id="calApptSubmitBtn" onclick="submitCalendarAppointment()"><span class="material-symbols-outlined">check</span> Schedule</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      var iso = new Date().toISOString().slice(0,10);
+      var el = document.getElementById('calApptModalDate');
+      if (el) el.value = iso;
+    })();
+  </script>
+  <script src="js/global.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/permissions.js"></script>
+  <script src="js/calendar.js"></script>
+</body>
+</html>

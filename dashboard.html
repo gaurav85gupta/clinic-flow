@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clinic — Dashboard</title>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    .patient-search-results {
+      position: absolute; top: 100%; left: 0; right: 0; z-index: 50;
+      background: var(--color-surface, #fff); border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 8px; margin-top: 4px; max-height: 220px; overflow-y: auto;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+    .patient-search-results .psr-item { padding: 8px 12px; cursor: pointer; font-size: 13px; }
+    .patient-search-results .psr-item:hover { background: rgba(0,0,0,0.04); }
+    .patient-search-results .psr-empty { padding: 8px 12px; font-size: 12px; color: var(--color-on-surface-variant, #707974); }
+    .patient-search-results .psr-add-new { border-top: 1px solid rgba(0,0,0,0.08); color: var(--color-secondary-light, #2EBD85); font-weight: 600; }
+    .patient-search-results .psr-inline-form { padding: 10px 12px; }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <main class="main-content">
+
+      <!-- Page Header -->
+      <div class="page-header">
+        <div class="page-header-actions">
+          <button class="btn btn-secondary"><span class="material-symbols-outlined">download</span> Export</button>
+          <button class="btn btn-primary" onclick="openModal('addAppointmentModal')"><span class="material-symbols-outlined">add</span> New Appointment</button>
+        </div>
+      </div>
+
+      <!-- KPI Cards -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-icon-wrap green"><span class="material-symbols-outlined icon-filled">group</span></div>
+          <div class="kpi-body">
+            <div class="kpi-label">Active Patients</div>
+            <div class="kpi-value" id="kpiActivePatients">—</div>
+            <div class="kpi-trend neutral" id="kpiActivePatientsTrend">Loading…</div>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon-wrap blue"><span class="material-symbols-outlined icon-filled">event</span></div>
+          <div class="kpi-body">
+            <div class="kpi-label">Today's Appointments</div>
+            <div class="kpi-value" id="kpiTodayAppts">—</div>
+            <div class="kpi-trend neutral" id="kpiTodayApptsTrend">Loading…</div>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon-wrap teal"><span class="material-symbols-outlined icon-filled">payments</span></div>
+          <div class="kpi-body">
+            <div class="kpi-label">Monthly Revenue</div>
+            <div class="kpi-value" id="kpiMonthlyRevenue">—</div>
+            <div class="kpi-trend neutral" id="kpiMonthlyRevenueTrend">Loading…</div>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon-wrap orange"><span class="material-symbols-outlined icon-filled">stethoscope</span></div>
+          <div class="kpi-body">
+            <div class="kpi-label">Available Doctors</div>
+            <div class="kpi-value" id="kpiAvailableDoctors">—</div>
+            <div class="kpi-trend neutral" id="kpiAvailableDoctorsTrend">Loading…</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Today's Queue (Phase D5) — live patient flow, backed by
+           GET /api/dashboard/queue. See dashboard.js loadQueue(). -->
+      <div class="card card-padded queue-widget-card" style="margin-bottom:16px">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Today's Queue</div>
+            <div class="card-subtitle" id="queueSubtitle">Loading…</div>
+          </div>
+          <div class="queue-filters">
+            <select class="filter-select" id="queueDoctorFilter">
+              <option value="">All Doctors</option>
+            </select>
+            <select class="filter-select" id="queueDeptFilter">
+              <option value="">All Departments</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="queue-summary-strip" id="queueSummaryStrip">
+          <div class="text-muted text-sm" style="padding:8px 0">Loading queue…</div>
+        </div>
+
+        <div class="queue-list" id="queueList">
+          <div class="text-muted text-sm" style="padding:8px 0">Loading queue…</div>
+        </div>
+      </div>
+
+      <!-- Doctor Performance Today (Phase D6) — live top-5 ranking,
+           backed by GET /api/dashboard/doctor-performance. See
+           dashboard.js loadDoctorPerformance(). Mini calendar now lives
+           in this card's right-hand column to fill the empty space that
+           opens up when there's only 1-2 doctor cards in the grid. -->
+      <div class="card card-padded doc-perf-widget-card" style="margin-bottom:16px">
+        <div class="doc-perf-with-cal">
+          <div class="doc-perf-main">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Doctor Performance Today</div>
+                <div class="card-subtitle" id="docPerfSubtitle">Loading…</div>
+              </div>
+              <div class="doc-perf-sort">
+                <span class="text-muted text-xs" style="margin-right:6px">Rank by</span>
+                <select class="filter-select" id="docPerfSortSelect">
+                  <option value="patients">Patients Seen</option>
+                  <option value="revenue">Revenue Generated</option>
+                  <option value="completed">Completed Consultations</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="doc-perf-grid" id="docPerfGrid">
+              <div class="text-muted text-sm" style="padding:8px 0">Loading doctor performance…</div>
+            </div>
+          </div>
+
+          <!-- Mini Calendar (moved here from right-column) -->
+          <div class="doc-perf-cal-col">
+            <div class="card-header">
+              <div class="card-title" id="miniCalTitle">—</div>
+              <div class="flex gap-sm">
+                <button class="btn-ghost btn btn-icon"><span class="material-symbols-outlined">chevron_left</span></button>
+                <button class="btn-ghost btn btn-icon"><span class="material-symbols-outlined">chevron_right</span></button>
+              </div>
+            </div>
+            <div class="mini-calendar" id="miniCalendar"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Grid -->
+      <div class="dash-grid">
+
+        <!-- Revenue Chart -->
+        <div class="card card-padded">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Revenue Trends</div>
+              <div class="card-subtitle">Weekly vs Monthly performance</div>
+            </div>
+            <div class="chart-toggle">
+              <button class="chart-tab active" data-period="weekly">Weekly</button>
+              <button class="chart-tab" data-period="monthly">Monthly</button>
+            </div>
+          </div>
+          <canvas id="revenueChart" height="200"></canvas>
+          <div class="text-muted text-sm" id="revenueChartEmpty" style="display:none;padding:32px 0;text-align:center">Loading revenue…</div>
+          <div id="revenueChartStats" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--color-surface-low);grid-template-columns:repeat(4,1fr);gap:8px"></div>
+        </div>
+
+        <!-- Today's Appointments -->
+        <div class="card card-padded">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Today's Appointments</div>
+              <div class="card-subtitle" id="todayApptSubtitle">Loading…</div>
+            </div>
+            <a href="appointments.html" class="btn btn-ghost btn-sm">View all</a>
+          </div>
+          <div class="flex gap-sm mb-md" id="todayStatusStrip"></div>
+          <div class="appt-list" id="todayApptList">
+            <div class="text-muted text-sm" style="padding:8px 0">Loading today's schedule…</div>
+          </div>
+        </div>
+
+        <!-- Doctor Status -->
+        <div class="card card-padded">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Doctor Availability</div>
+              <div class="card-subtitle">Today's roster</div>
+            </div>
+            <a href="doctors.html" class="btn btn-ghost btn-sm">Manage</a>
+          </div>
+          <div class="doctor-status-list" id="doctorStatusList">
+            <div class="text-muted text-sm" style="padding:8px 0">Loading roster…</div>
+          </div>
+        </div>
+
+        <!-- Department Performance: now backed by GET /api/reports/appointments
+             (byDepartment, this month) — see dashboard.js loadDeptPerformance().
+             Replaces the previous hardcoded 342/287/214/176/149 mock. -->
+        <div class="card card-padded">
+          <div class="card-header">
+            <div class="card-title">Department Performance</div>
+            <div class="card-subtitle">Patient load this month</div>
+          </div>
+          <div class="dept-bars" id="deptBars">
+            <div class="text-muted text-sm" style="padding:8px 0">Loading…</div>
+          </div>
+        </div>
+
+        <!-- Recent Activity: backed by GET /api/dashboard/activity, which
+             reads the AuditLog collection (previously write-only from the
+             API's perspective) — see dashboard.js loadRecentActivity(). -->
+        <div class="card card-padded">
+          <div class="card-header">
+            <div class="card-title">Recent Activity</div>
+          </div>
+          <div class="activity-list" id="recentActivityList">
+            <div class="text-muted text-sm" style="padding:8px 0">Loading activity…</div>
+          </div>
+        </div>
+
+        <!-- Pending Tasks & Alerts (Phase D4): backed by GET /api/dashboard/tasks.
+             Every task is generated live from Appointments/Invoices/Doctors/
+             Departments/Staff/Clinic — see server.js's TASK_GENERATORS.
+             No hardcoded reminders; an empty result renders the empty state
+             below via dashboard.js's loadPendingTasks(). -->
+        <div class="card card-padded">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Pending Tasks & Alerts</div>
+              <div class="card-subtitle">Things that need attention today</div>
+            </div>
+          </div>
+          <div class="tasks-list" id="pendingTasksList">
+            <div class="text-muted text-sm" style="padding:8px 0">Loading tasks…</div>
+          </div>
+        </div>
+
+        <!-- Quick Actions + Upcoming -->
+        <div class="right-column">
+          <!-- Upcoming Schedule -->
+          <div class="card card-padded">
+            <div class="card-header">
+              <div class="card-title">Upcoming Schedule</div>
+              <a href="calendar.html" class="btn btn-ghost btn-sm">Full View</a>
+            </div>
+            <div class="schedule-list" id="upcomingScheduleList">
+              <div class="text-muted text-sm" style="padding:8px 0">Loading…</div>
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="card card-padded">
+            <div class="card-title mb-md">Quick Actions</div>
+            <div class="quick-actions-grid">
+              <a href="appointments.html" class="quick-action-btn">
+                <span class="material-symbols-outlined icon-filled">event_available</span>
+                <span>Book Appointment</span>
+              </a>
+              <a href="patients.html" class="quick-action-btn">
+                <span class="material-symbols-outlined icon-filled">person_add</span>
+                <span>Add Patient</span>
+              </a>
+              <a href="billing.html" class="quick-action-btn">
+                <span class="material-symbols-outlined icon-filled">receipt_long</span>
+                <span>Create Invoice</span>
+              </a>
+              <a href="reports.html" class="quick-action-btn">
+                <span class="material-symbols-outlined icon-filled">assessment</span>
+                <span>View Reports</span>
+              </a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Add Appointment Modal -->
+  <div class="modal-overlay" id="addAppointmentModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">New Appointment</div>
+        <button class="modal-close" onclick="closeModal('addAppointmentModal')"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group" style="position:relative">
+            <label class="form-label">Patient Name</label>
+            <input class="form-input" type="text" placeholder="Search patient..." id="dashApptPatientSearch" autocomplete="off">
+            <input type="hidden" id="dashApptPatientId">
+            <div id="dashApptPatientResults" class="patient-search-results" style="display:none"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Doctor</label>
+            <select class="form-select" id="dashApptDoctorId">
+              <option value="">Loading doctors…</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Date</label>
+            <input class="form-input" type="date" id="dashModalDate">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Time</label>
+            <div style="display:flex;gap:8px">
+              <input class="form-input" type="time" value="09:00" id="dashApptStartTime" onchange="applyApptDuration('dashApptStartTime','dashApptEndTime')">
+              <input class="form-input" type="time" value="09:30" id="dashApptEndTime">
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Type</label>
+          <select class="form-select" id="dashApptType">
+            <option>Consultation</option><option>Follow-up</option><option>Telemedicine</option><option>Procedure</option><option>Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notes</label>
+          <textarea class="form-textarea" placeholder="Any additional notes..." id="dashApptNotes"></textarea>
+        </div>
+        <div id="dashApptError" class="text-sm" style="color:var(--color-error);display:none;margin-top:4px"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('addAppointmentModal')">Cancel</button>
+        <button class="btn btn-primary" id="dashApptSubmitBtn" onclick="submitDashboardAppointment()"><span class="material-symbols-outlined">check</span> Book Appointment</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      var iso = new Date().toISOString().slice(0,10);
+      var el = document.getElementById('dashModalDate');
+      if (el) el.value = iso;
+      var dtxt = document.getElementById('dashboardDateText');
+      if (dtxt) dtxt.textContent = new Date().toLocaleDateString('en-US', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+    })();
+  </script>
+  <script src="js/global.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/permissions.js"></script>
+  <script src="js/export-helpers.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

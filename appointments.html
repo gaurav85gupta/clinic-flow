@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clinic — Appointments</title>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/appointments.css">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <style>
+    .patient-search-results {
+      position: absolute; top: 100%; left: 0; right: 0; z-index: 50;
+      background: var(--color-surface, #fff); border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 8px; margin-top: 4px; max-height: 220px; overflow-y: auto;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+    .patient-search-results .psr-item { padding: 8px 12px; cursor: pointer; font-size: 13px; }
+    .patient-search-results .psr-item:hover { background: rgba(0,0,0,0.04); }
+    .patient-search-results .psr-empty { padding: 8px 12px; font-size: 12px; color: var(--color-on-surface-variant, #707974); }
+    .patient-search-results .psr-add-new { border-top: 1px solid rgba(0,0,0,0.08); color: var(--color-secondary-light, #2EBD85); font-weight: 600; }
+    .patient-search-results .psr-inline-form { padding: 10px 12px; }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <main class="main-content">
+
+      <div class="page-header">
+        <div class="page-header-left">
+          <h1>Appointments</h1>
+          <p>Manage and track all patient appointments</p>
+        </div>
+        <div class="page-header-actions">
+          <button class="btn btn-secondary"><span class="material-symbols-outlined">filter_list</span> Filter</button>
+          <button class="btn btn-primary" onclick="openModal('addApptModal')"><span class="material-symbols-outlined">add</span> New Appointment</button>
+        </div>
+      </div>
+
+      <!-- Status Summary -->
+      <div class="appt-status-bar">
+        <div class="status-pill all active" data-filter="all">All <span class="pill-count">0</span></div>
+        <div class="status-pill" data-filter="scheduled">Scheduled <span class="pill-count">0</span></div>
+        <div class="status-pill" data-filter="confirmed">Confirmed <span class="pill-count">0</span></div>
+        <div class="status-pill" data-filter="waiting">Waiting <span class="pill-count">0</span></div>
+        <div class="status-pill" data-filter="completed">Completed <span class="pill-count">0</span></div>
+        <div class="status-pill" data-filter="cancelled">Cancelled <span class="pill-count">0</span></div>
+      </div>
+
+      <div class="grid-main-side">
+        <!-- Main Table -->
+        <div class="card">
+          <div class="card-padded" style="padding-bottom:12px">
+            <div class="toolbar">
+              <div class="search-box">
+                <span class="material-symbols-outlined">search</span>
+                <input type="text" placeholder="Search appointments..." id="apptSearch">
+              </div>
+              <select class="filter-select" id="doctorFilter">
+                <option value="">All Doctors</option>
+                <!-- populated by JS: appointments.js -> loadFilterDropdowns() -->
+              </select>
+              <select class="filter-select" id="deptFilter">
+                <option value="">All Departments</option>
+                <!-- populated by JS: appointments.js -> loadFilterDropdowns() -->
+              </select>
+              <input type="date" class="filter-select" id="dateFilter">
+            </div>
+          </div>
+
+          <div class="table-wrapper">
+            <table id="apptTable">
+              <thead>
+                <tr>
+                  <th>Patient</th>
+                  <th>Doctor</th>
+                  <th>Department</th>
+                  <th>Date & Time</th>
+                  <th>Type</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="apptTableBody">
+                <!-- populated by JS -->
+              </tbody>
+            </table>
+          </div>
+          <div class="pagination">
+            <span>Loading…</span>
+            <div class="pagination-controls">
+              <button class="page-btn"><span class="material-symbols-outlined" style="font-size:16px">chevron_left</span></button>
+              <button class="page-btn active">1</button>
+              <button class="page-btn">2</button>
+              <button class="page-btn">3</button>
+              <span style="padding:0 4px;color:var(--color-outline)">...</span>
+              <button class="page-btn">13</button>
+              <button class="page-btn"><span class="material-symbols-outlined" style="font-size:16px">chevron_right</span></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upcoming Panel -->
+        <div class="flex flex-col gap-md">
+          <div class="card card-padded">
+            <div class="card-header">
+              <div class="card-title">Today's Summary</div>
+              <span class="text-muted text-xs" id="todaySummaryDate"></span>
+            </div>
+            <div class="today-stats">
+              <div class="today-stat"><div class="ts-num" style="color:var(--color-info)" id="tsTotal">—</div><div class="ts-label">Total</div></div>
+              <div class="today-stat"><div class="ts-num" style="color:var(--color-success)" id="tsDone">—</div><div class="ts-label">Done</div></div>
+              <div class="today-stat"><div class="ts-num" style="color:var(--color-warning)" id="tsWaiting">—</div><div class="ts-label">Waiting</div></div>
+              <div class="today-stat"><div class="ts-num" style="color:var(--color-error)" id="tsMissed">—</div><div class="ts-label">Missed</div></div>
+            </div>
+          </div>
+
+          <div class="card card-padded">
+            <div class="card-header">
+              <div class="card-title">Upcoming Today</div>
+            </div>
+            <div class="upcoming-list" id="upcomingList">
+              <!-- populated by JS -->
+            </div>
+          </div>
+
+          <div class="card card-padded">
+            <div class="card-title mb-md">Appointment Types</div>
+            <!-- No /api/reports endpoint groups appointments by `type`.
+                 Computed client-side from today's loaded appointments
+                 (see appointments.js: renderApptTypeMix) rather than
+                 left as the original hardcoded 68/21/11% mock. -->
+            <div class="appt-types" id="apptTypeMix">
+              <div class="text-muted text-sm" style="padding:8px 0">Loading…</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Appointment Detail Modal -->
+  <div class="modal-overlay" id="apptDetailModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Appointment Details</div>
+        <button class="modal-close" onclick="closeModal('apptDetailModal')"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body" id="apptDetailBody"><!-- filled by JS --></div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('apptDetailModal')">Close</button>
+        <span id="apptDetailFooterActions" style="display:contents"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Appointment Modal -->
+  <div class="modal-overlay" id="addApptModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">New Appointment</div>
+        <button class="modal-close" onclick="closeModal('addApptModal')"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group" style="position:relative">
+            <label class="form-label">Patient Name</label>
+            <input class="form-input" placeholder="Search patient..." id="newApptPatientSearch" autocomplete="off">
+            <input type="hidden" id="newApptPatientId">
+            <div id="newApptPatientResults" class="patient-search-results" style="display:none"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Doctor</label>
+            <select class="form-select" id="newApptDoctorId">
+              <option value="">Loading doctors…</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Date</label><input class="form-input" type="date" id="apptModalDate"></div>
+          <div class="form-group"><label class="form-label">Time</label>
+            <div style="display:flex;gap:8px">
+              <input class="form-input" type="time" value="09:00" id="newApptStartTime" onchange="applyApptDuration('newApptStartTime','newApptEndTime')">
+              <input class="form-input" type="time" value="09:30" id="newApptEndTime">
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Department</label>
+            <input class="form-input" id="newApptDept" disabled placeholder="Auto-filled from doctor">
+          </div>
+          <div class="form-group"><label class="form-label">Type</label>
+            <select class="form-select" id="newApptType">
+              <option>Consultation</option><option>Follow-up</option><option>Telemedicine</option><option>Procedure</option><option>Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label">Notes</label><textarea class="form-textarea" placeholder="Chief complaint or notes..." id="newApptNotes"></textarea></div>
+        <div id="newApptError" class="text-sm" style="color:var(--color-error);display:none;margin-top:4px"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('addApptModal')">Cancel</button>
+        <button class="btn btn-primary" id="newApptSubmitBtn" onclick="submitNewAppointment()"><span class="material-symbols-outlined">check</span> Book</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      var t = new Date();
+      var iso = t.toISOString().slice(0,10);
+      var el = document.getElementById('dateFilter');
+      if (el) el.value = iso;
+      var lbl = document.getElementById('todaySummaryDate');
+      if (lbl) lbl.textContent = t.toLocaleDateString('default',{month:'long',day:'numeric'});
+      var md = document.getElementById('apptModalDate');
+      if (md) md.value = iso;
+    })();
+  </script>
+  <script src="js/global.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/permissions.js"></script>
+  <script src="js/appointments.js"></script>
+</body>
+</html>

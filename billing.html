@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clinic — Billing</title>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/billing.css">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    .patient-search-results {
+      position: absolute; top: 100%; left: 0; right: 0; z-index: 50;
+      background: var(--color-surface, #fff); border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 8px; margin-top: 4px; max-height: 220px; overflow-y: auto;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+    .patient-search-results .psr-item { padding: 8px 12px; cursor: pointer; font-size: 13px; }
+    .patient-search-results .psr-item:hover { background: rgba(0,0,0,0.04); }
+    .patient-search-results .psr-empty { padding: 8px 12px; font-size: 12px; color: var(--color-on-surface-variant, #707974); }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <main class="main-content">
+
+      <div class="page-header">
+        <div class="page-header-left">
+          <h1>Billing</h1>
+          <p>Revenue tracking, invoices and payment management</p>
+        </div>
+        <div class="page-header-actions">
+          <button class="btn btn-secondary"><span class="material-symbols-outlined">download</span> Export</button>
+          <button class="btn btn-primary" onclick="openModal('createInvoiceModal')"><span class="material-symbols-outlined">add</span> New Invoice</button>
+        </div>
+      </div>
+
+      <!-- Revenue KPIs -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-icon-wrap teal"><span class="material-symbols-outlined icon-filled">payments</span></div>
+          <div class="kpi-body">
+            <div class="kpi-label">Today's Collection</div>
+            <div class="kpi-value" id="kpiTodayCollection">—</div>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon-wrap green"><span class="material-symbols-outlined icon-filled">calendar_month</span></div>
+          <div class="kpi-body">
+            <div class="kpi-label">Monthly Revenue</div>
+            <div class="kpi-value" id="kpiMonthlyRevenue">—</div>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon-wrap orange"><span class="material-symbols-outlined icon-filled">pending</span></div>
+          <div class="kpi-body">
+            <div class="kpi-label">Pending Invoices</div>
+            <div class="kpi-value" id="kpiPendingInvoices">—</div>
+            <div class="kpi-trend neutral" id="kpiPendingCount"></div>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon-wrap red"><span class="material-symbols-outlined icon-filled">warning</span></div>
+          <div class="kpi-body">
+            <div class="kpi-label">Overdue Amount</div>
+            <div class="kpi-value" id="kpiOverdueAmount">—</div>
+            <div class="kpi-trend down" id="kpiOverdueCount"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="billing-layout">
+        <!-- Invoice Table -->
+        <div>
+          <div class="card">
+            <div class="card-padded" style="padding-bottom:12px">
+              <div class="card-header">
+                <div class="card-title">Invoice List</div>
+              </div>
+              <div class="toolbar">
+                <div class="search-box">
+                  <span class="material-symbols-outlined">search</span>
+                  <input type="text" placeholder="Search invoices...">
+                </div>
+                <select class="filter-select">
+                  <option>All Status</option>
+                  <option>Paid</option>
+                  <option>Pending</option>
+                  <option>Overdue</option>
+                </select>
+                <input type="month" class="filter-select" id="billingMonthFilter">
+              </div>
+            </div>
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Invoice #</th>
+                    <th>Patient</th>
+                    <th>Doctor</th>
+                    <th>Services</th>
+                    <th>Amount</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="invoiceTableBody"></tbody>
+              </table>
+            </div>
+            <div class="pagination">
+              <span>Loading…</span>
+              <div class="pagination-controls">
+                <button class="page-btn"><span class="material-symbols-outlined" style="font-size:16px">chevron_left</span></button>
+                <button class="page-btn active">1</button>
+                <button class="page-btn">2</button>
+                <button class="page-btn">3</button>
+                <button class="page-btn"><span class="material-symbols-outlined" style="font-size:16px">chevron_right</span></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Side: Revenue Chart -->
+        <div class="flex flex-col gap-md">
+          <div class="card card-padded">
+            <div class="card-header">
+              <div class="card-title">Revenue Chart</div>
+            </div>
+            <canvas id="billingChart" height="180"></canvas>
+          </div>
+          <div class="card card-padded">
+            <div class="card-title mb-md">Payment Methods</div>
+            <div class="payment-methods">
+              <div class="pm-item"><div class="pm-icon"><span class="material-symbols-outlined icon-filled">credit_card</span></div><div class="pm-info"><div class="pm-name">Card</div><div class="pm-pct">48%</div></div><div class="pm-bar-track"><div style="width:48%"></div></div></div>
+              <div class="pm-item"><div class="pm-icon"><span class="material-symbols-outlined icon-filled">account_balance</span></div><div class="pm-info"><div class="pm-name">Bank Transfer</div><div class="pm-pct">31%</div></div><div class="pm-bar-track"><div style="width:31%"></div></div></div>
+              <div class="pm-item"><div class="pm-icon"><span class="material-symbols-outlined icon-filled">payments</span></div><div class="pm-info"><div class="pm-name">Cash</div><div class="pm-pct">21%</div></div><div class="pm-bar-track"><div style="width:21%"></div></div></div>
+            </div>
+          </div>
+          <div class="card card-padded">
+            <div class="card-title mb-md">Top Departments by Revenue</div>
+            <!-- Populated by js/billing.js loadTopDepartments() from
+                 GET /api/reports/revenue → byDepartment. MongoDB only —
+                 no hardcoded service/department rows. -->
+            <div class="service-list">
+              <div class="text-muted text-sm" style="padding:8px 0">Loading…</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Invoice Detail Modal -->
+  <div class="modal-overlay" id="invoiceDetailModal">
+    <div class="modal" style="max-width:580px">
+      <div class="modal-header">
+        <div class="modal-title">Invoice Details</div>
+        <button class="modal-close" onclick="closeModal('invoiceDetailModal')"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body" id="invoiceDetailBody"></div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('invoiceDetailModal')">Close</button>
+        <button class="btn btn-primary"><span class="material-symbols-outlined">print</span> Print Invoice</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Invoice Modal -->
+  <div class="modal-overlay" id="createInvoiceModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Create Invoice</div>
+        <button class="modal-close" onclick="closeModal('createInvoiceModal')"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group" style="position:relative">
+            <label class="form-label">Patient</label>
+            <input class="form-input" placeholder="Search patient..." id="newInvPatientSearch" autocomplete="off">
+            <input type="hidden" id="newInvPatientId">
+            <div id="newInvPatientResults" class="patient-search-results" style="display:none"></div>
+          </div>
+          <div class="form-group"><label class="form-label">Doctor</label>
+            <select class="form-select" id="newInvDoctorId"><option value="">Loading doctors…</option></select>
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label">Services</label>
+          <div class="services-adder" id="newInvServiceLines">
+            <div class="service-line">
+              <input class="form-input inv-svc-desc" placeholder="Service name" style="flex:1">
+              <input class="form-input inv-svc-qty" type="number" placeholder="Qty" style="width:70px" value="1" min="1">
+              <input class="form-input inv-svc-price" type="number" placeholder="Price" style="width:120px" min="0">
+              <button class="btn btn-ghost btn-icon" onclick="removeInvoiceServiceLine(this)"><span class="material-symbols-outlined">remove</span></button>
+            </div>
+          </div>
+          <button class="btn btn-secondary btn-sm" style="margin-top:8px" onclick="addInvoiceServiceLine()"><span class="material-symbols-outlined">add</span> Add Service</button>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Date</label><input class="form-input" type="date" id="invoiceDateInput"></div>
+          <div class="form-group"><label class="form-label">Due Date</label><input class="form-input" type="date" id="invoiceDueDateInput"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Notes</label><textarea class="form-textarea" placeholder="Payment notes..." id="newInvNotes"></textarea></div>
+        <div id="newInvError" class="text-sm" style="color:var(--color-error);display:none;margin-top:4px"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('createInvoiceModal')">Cancel</button>
+        <button class="btn btn-primary" id="newInvSubmitBtn" onclick="submitNewInvoice()"><span class="material-symbols-outlined">check</span> Create Invoice</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      var t = new Date();
+      var iso = t.toISOString().slice(0,10);
+      var ym = iso.slice(0,7);
+      var mf = document.getElementById('billingMonthFilter');
+      if (mf) mf.value = ym;
+      var di = document.getElementById('invoiceDateInput');
+      if (di) di.value = iso;
+      var dd = document.getElementById('invoiceDueDateInput');
+      if (dd) { var due = new Date(t); due.setDate(due.getDate()+7); dd.value = due.toISOString().slice(0,10); }
+    })();
+  </script>
+  <script src="js/global.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/export-helpers.js"></script>
+  <script src="js/billing.js"></script>
+</body>
+</html>

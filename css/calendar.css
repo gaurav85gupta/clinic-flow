@@ -1,0 +1,48 @@
+/* CALENDAR */
+.cal-layout { display:grid; grid-template-columns:1fr 280px; gap:16px; }
+.cal-header { display:flex; align-items:center; gap:8px; margin-bottom:16px; }
+.cal-month-title { font-family:'Manrope',sans-serif; font-size:20px; font-weight:800; flex:1; text-align:center; }
+.cal-view-toggle { display:flex; background:var(--color-surface); border-radius:var(--radius-pill); padding:3px; border:1px solid var(--color-surface-low); }
+.cal-view-btn { padding:6px 14px; border-radius:var(--radius-md); font-size:13px; font-weight:600; color:var(--color-on-surface-variant); background:transparent; border:none; cursor:pointer; transition:var(--transition); }
+.cal-view-btn.active { background:var(--color-primary-container); color:#fff; }
+
+/* Month view */
+.cal-grid-header { display:grid; grid-template-columns:repeat(7,1fr); text-align:center; margin-bottom:8px; }
+.cal-day-label { font-size:11px; font-weight:700; color:var(--color-on-surface-variant); text-transform:uppercase; padding:4px 0; }
+.cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
+.cal-cell {
+  min-height:76px;
+  border-radius:var(--radius-md);
+  padding:5px;
+  background:var(--color-background);
+  cursor:pointer;
+  transition:var(--transition);
+  border:1.5px solid transparent;
+}
+.cal-cell:hover { border-color:var(--color-secondary-light); background:rgba(46,189,133,0.04); }
+.cal-cell.today { border-color:var(--color-secondary-light); background:rgba(46,189,133,0.06); }
+.cal-cell.selected { border-color:var(--color-primary-container); background:rgba(27,77,62,0.06); }
+.cal-cell.other-month { opacity:0.4; }
+.cal-cell-date { font-size:13px; font-weight:700; color:var(--color-on-surface); width:24px; height:24px; border-radius:var(--radius-full); display:flex; align-items:center; justify-content:center; margin-bottom:4px; }
+.cal-cell.today .cal-cell-date { background:var(--gradient-brand); color:#fff; }
+.cal-event { font-size:10px; font-weight:600; padding:2px 6px; border-radius:var(--radius-sm); margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.cal-event.cardio { background:rgba(0,97,164,0.12); color:var(--color-info); }
+.cal-event.general { background:var(--color-success-container); color:var(--color-success); }
+.cal-event.neuro { background:rgba(123,45,139,0.12); color:#7b2d8b; }
+.cal-event.pedi { background:var(--color-warning-container); color:var(--color-warning); }
+.cal-event.derm { background:rgba(46,189,133,0.15); color:var(--color-secondary-light); }
+.more-events { font-size:10px; color:var(--color-on-surface-variant); font-weight:600; margin-top:2px; }
+
+/* Doctor filter */
+.doctor-filter-list { display:flex; flex-direction:column; gap:8px; }
+.doctor-filter-item { display:flex; align-items:center; gap:10px; }
+.doctor-filter-item input[type=checkbox] { width:16px; height:16px; accent-color:var(--color-secondary); }
+.doctor-filter-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.doctor-filter-name { font-size:13px; font-weight:500; }
+
+/* Day appointments */
+.day-appt-list { display:flex; flex-direction:column; gap:8px; }
+.day-appt-item { display:flex; gap:10px; align-items:flex-start; padding:10px; background:var(--color-background); border-radius:var(--radius-md); border-left:3px solid var(--color-secondary-light); }
+.day-appt-time { font-size:11px; font-weight:700; color:var(--color-on-surface-variant); width:52px; flex-shrink:0; margin-top:2px; }
+
+@media (max-width:900px) { .cal-layout { grid-template-columns:1fr; } }

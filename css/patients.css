@@ -1,0 +1,51 @@
+/* PATIENTS */
+.view-toggle-bar { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:16px; flex-wrap:wrap; }
+.view-tabs { display:flex; gap:4px; background:var(--color-surface); border-radius:var(--radius-pill); padding:4px; border:1px solid var(--color-surface-low); }
+.view-tab { display:flex; align-items:center; gap:6px; padding:6px 14px; border-radius:var(--radius-md); font-size:13px; font-weight:600; color:var(--color-on-surface-variant); background:transparent; border:none; cursor:pointer; transition:var(--transition); }
+.view-tab .material-symbols-outlined { font-size:16px; }
+.view-tab.active { background:var(--color-primary-container); color:#fff; }
+
+.growth-stats { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.growth-stat { background:var(--color-background); border-radius:var(--radius-md); padding:12px; text-align:center; }
+.gs-num { font-family:'Manrope',sans-serif; font-size:22px; font-weight:800; color:var(--color-on-surface); }
+.gs-label { font-size:11px; color:var(--color-on-surface-variant); font-weight:600; margin-top:2px; }
+
+.age-dist { display:flex; flex-direction:column; gap:8px; }
+.age-row { display:flex; align-items:center; gap:8px; font-size:12px; color:var(--color-on-surface-variant); }
+.age-row > span:first-child { width:48px; flex-shrink:0; }
+.age-row > span:last-child { width:32px; text-align:right; font-weight:600; color:var(--color-on-surface); }
+.age-bar-track { flex:1; height:7px; background:var(--color-surface-container); border-radius:var(--radius-full); overflow:hidden; }
+.age-bar-track > div { height:100%; background:var(--gradient-brand); border-radius:var(--radius-full); }
+
+.blood-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+.blood-item { background:var(--color-background); border-radius:var(--radius-md); padding:10px; text-align:center; }
+.blood-type { font-family:'Manrope',sans-serif; font-size:16px; font-weight:800; color:var(--color-error); }
+.blood-pct { font-size:11px; color:var(--color-on-surface-variant); font-weight:600; }
+
+/* Patient detail in modal */
+.patient-modal-header { display:flex; align-items:center; gap:16px; padding:16px; background:var(--color-background); border-radius:var(--radius-lg); margin-bottom:16px; }
+.patient-modal-avatar { width:64px; height:64px; border-radius:var(--radius-full); font-size:22px; font-weight:800; font-family:'Manrope',sans-serif; color:#fff; display:flex; align-items:center; justify-content:center; }
+.patient-tabs { display:flex; gap:4px; background:var(--color-background); border-radius:var(--radius-lg); padding:4px; margin-bottom:16px; }
+.patient-tab { flex:1; padding:8px; text-align:center; font-size:12px; font-weight:600; border-radius:var(--radius-md); color:var(--color-on-surface-variant); cursor:pointer; transition:var(--transition); border:none; background:transparent; }
+.patient-tab.active { background:var(--color-surface); color:var(--color-primary); box-shadow:var(--shadow-card); }
+.visit-list { display:flex; flex-direction:column; gap:10px; }
+.visit-item { display:flex; align-items:center; gap:12px; padding:10px; background:var(--color-background); border-radius:var(--radius-md); }
+.visit-date { font-size:11px; font-weight:700; color:var(--color-on-surface-variant); width:72px; flex-shrink:0; }
+
+/* shared table action buttons (view/edit/book icons in Actions column) —
+   patients.html doesn't load appointments.css/doctors.css, so these
+   were previously unstyled here, causing the icons to overflow the cell. */
+.action-btn-group { display:flex; gap:4px; justify-content:flex-end; }
+.tbl-action-btn {
+  width:28px; height:28px;
+  border-radius:var(--radius-md);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; border:none;
+  background:var(--color-background);
+  color:var(--color-on-surface-variant);
+  transition:var(--transition);
+  font-family:inherit;
+  flex-shrink:0;
+}
+.tbl-action-btn:hover { background:var(--color-surface-container); color:var(--color-primary); }
+.tbl-action-btn .material-symbols-outlined { font-size:15px; }

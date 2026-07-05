@@ -1321,9 +1321,10 @@ app.use(helmet({
       "script-src":  ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
       "style-src":   ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       "font-src":    ["'self'", "https://fonts.gstatic.com"],
-      // Fix: allow fetch() calls from the frontend (dashboard.js, api.js)
-      // to reach the local API and any CDN source maps.
-      "connect-src": ["'self'", `http://localhost:${PORT}`, "https://cdn.jsdelivr.net"],
+      // 'self' covers fetch() calls from the frontend (dashboard.js,
+      // api.js) automatically, whether running locally (localhost)
+      // or deployed (Render) — no hardcoded host needed.
+      "connect-src": ["'self'", "https://cdn.jsdelivr.net"],
       // Fix: allow data: URIs used by Chart.js for canvas rendering
       "img-src":     ["'self'", "data:"],
     },
